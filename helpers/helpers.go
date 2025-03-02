@@ -9,27 +9,57 @@ import (
 	"nask/structs"
 
 	"github.com/glebarez/sqlite"
-	// gap "github.com/muesli/go-app-paths"
+	gap "github.com/muesli/go-app-paths"
 	"gorm.io/gorm"
 )
 
 func ConnectToSQLite() (*gorm.DB, error) {
-	// scope := gap.NewScope(gap.User, "nask")
-	// dirs, err := scope.DataDirs()
-	// app_path := dirs[0] + "nask.db"
-	// CheckErr(err)
-	// app_path := "/home/eko/.local/share/nask/nask.db"
-	app_path := "./nask.db"
+	scope := gap.NewScope(gap.User, "nask")
+	dirs, err := scope.DataDirs()
+	appPath := dirs[0] + "/nask.db"
+	CheckErr(err)
+	dirPath := dirs[0]
 
-	_, e := os.Stat(app_path)
-	CheckErr(e)
-
-	if os.IsNotExist(e) {
-		os.MkdirAll(app_path, 0o770)
+	LogToFile(fmt.Sprintf("%v", dirs[0]))
+	LogToFile(fmt.Sprintf("%v", appPath))
+	_, statErr := os.Stat(dirPath)
+	if os.IsNotExist(statErr) {
+		err := os.MkdirAll(dirPath, 0o770)
+		CheckErr(err)
 	}
 
-	db, err := gorm.Open(sqlite.Open(app_path), &gorm.Config{})
+	_, err = os.Stat(appPath)
+	if os.IsNotExist(err) {
+		_, err := os.Create(appPath)
+		if err != nil {
+			LogToFile(fmt.Sprintf("%v", err))
+			return nil, fmt.Errorf("failed to create the database file: %v", err)
+		}
+	}
+
+	db, err := gorm.Open(sqlite.Open(appPath), &gorm.Config{})
 	CheckErr(err)
+
+	// Create DB
+	db.AutoMigrate(&structs.Task{})
+
+	var tasks []structs.Task
+	db.Find(&tasks)
+	if len(tasks) <= 0 {
+		NewTask := structs.Task{
+			Id:          0,
+			Name:        "Welcome",
+			Description: "You can delete this task now if you'd like :)",
+			Project_id:  0,
+			Prio:        0,
+			Time:        "",
+			Deletedtime: "",
+			Modified:    "",
+			Completed:   0,
+			Deleted:     0,
+		}
+		db.Create(&NewTask)
+	}
 
 	return db, nil
 }

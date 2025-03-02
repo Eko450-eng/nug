@@ -153,7 +153,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	s := ""
-	if len(m.tasks) == 0 {
+	if len(m.tasks) <= 0 {
 		s += "Coffee for all...."
 	}
 
@@ -184,7 +184,7 @@ func (m model) View() string {
 			}
 		}
 
-		if !m.editing {
+		if !m.editing && len(m.tasks) > 0 {
 			m.taskview = taskview.InitTaskCreation(m.tasks[m.cursor], false)
 		}
 
@@ -232,9 +232,6 @@ func main() {
 	db, err := helpers.ConnectToSQLite()
 	db.AutoMigrate(&structs.Task{})
 	helpers.CheckErr(err)
-
-	// Create DB
-	// db.AutoMigrate(&Task{})
 
 	// Start the app
 	f, err := tea.LogToFile("debug.log", "debug")
