@@ -1,4 +1,4 @@
-package taskview
+package taskcard
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"nask/structs"
 	"strconv"
 
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -17,7 +18,7 @@ type Fields struct {
 	InputField inputs.Input
 }
 
-type TaskViewModel struct {
+type TaskCardModel struct {
 	Task        structs.Task
 	Exiting     bool
 	styles      structs.Styles
@@ -27,7 +28,7 @@ type TaskViewModel struct {
 	fields      []Fields
 	current     Fields
 	ChangeEvent bool
-	isActive    bool
+	IsActive    bool
 }
 
 func newQuestion(q string) Fields {
@@ -48,7 +49,7 @@ func newLongQuestion(q string) Fields {
 	return question
 }
 
-func InitTaskCreation(task structs.Task, isActive bool) TaskViewModel {
+func InitModel(task structs.Task, isActive bool) TaskCardModel {
 	fields := []Fields{
 		newShortQuestion("Name"),
 		newLongQuestion("Description"),
@@ -56,7 +57,7 @@ func InitTaskCreation(task structs.Task, isActive bool) TaskViewModel {
 		newShortQuestion("Prio"),
 	}
 
-	return TaskViewModel{
+	return TaskCardModel{
 		Task:        task,
 		cursor:      0,
 		styles:      *structs.DefaultStyles(),
@@ -64,40 +65,34 @@ func InitTaskCreation(task structs.Task, isActive bool) TaskViewModel {
 		current:     fields[0],
 		Exiting:     false,
 		ChangeEvent: false,
-		isActive:    isActive,
+		IsActive:    isActive,
 	}
 }
 
-func (m TaskViewModel) Update(msg tea.Msg) (TaskViewModel, tea.Cmd) {
+func (m TaskCardModel) UpdateTaskCard(msg tea.Msg) (TaskCardModel, tea.Cmd) {
 	var cmd tea.Cmd
-	switch m.editing {
-	case true:
-		switch msg := msg.(type) {
-		case tea.KeyMsg:
-			switch msg.String() {
-			case "ctrl+c":
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch m.editing {
+		case true:
+			if key.Matches(msg, structs.Keymap.Quit) {
 				cmd = tea.Quit
-				return m, cmd
-			case "enter", "l":
+			} else if key.Matches(msg, structs.Keymap.Save) {
 				db, _ := helpers.ConnectToSQLite()
 				db.Model(&structs.Task{}).
 					Where("id = ?", m.Task.Id).
 					Update(m.current.Question, m.current.InputField.Value())
 				m.Exiting = true
 				m.editing = false
-			default:
+			} else {
 				m.current.InputField, cmd = m.current.InputField.Update(msg)
 			}
-		}
-	case false:
-		switch msg := msg.(type) {
-		case tea.KeyMsg:
-			switch msg.String() {
-			case "ctrl+c":
+		case false:
+			if key.Matches(msg, structs.Keymap.Quit) {
 				cmd = tea.Quit
-			case "q", "h":
+			} else if key.Matches(msg, structs.Keymap.Back) {
 				m.Exiting = true
-			case "enter":
+			} else if key.Matches(msg, structs.Keymap.Save) {
 				m.editing = true
 				value := ""
 				switch m.fields[m.cursor].Question {
@@ -111,16 +106,13 @@ func (m TaskViewModel) Update(msg tea.Msg) (TaskViewModel, tea.Cmd) {
 					value = strconv.Itoa(m.Task.Prio)
 				}
 				m.current.InputField.SetValue(value)
-			case "k", "up":
-				if m.cursor > 0 {
-					m.cursor--
-					m.current = m.fields[m.cursor]
-				}
-			case "j", "down":
-				if m.cursor < len(m.fields)-1 {
-					m.cursor++
-					m.current = m.fields[m.cursor]
-				}
+			} else if key.Matches(msg, structs.Keymap.Up) && m.cursor > 0 {
+				m.cursor--
+				m.current = m.fields[m.cursor]
+			}
+			if key.Matches(msg, structs.Keymap.Down) && m.cursor < len(m.fields)-1 {
+				m.cursor++
+				m.current = m.fields[m.cursor]
 			}
 		}
 	}
@@ -129,20 +121,20 @@ func (m TaskViewModel) Update(msg tea.Msg) (TaskViewModel, tea.Cmd) {
 }
 
 func selectedCursor(cursor, pos int, isActive bool) string {
-	c := ""
+	c := " "
 	if cursor == pos && isActive {
 		c = ">"
 	}
 	return c
 }
 
-func (m TaskViewModel) View(width int) string {
+func (m TaskCardModel) View(width int) string {
 	borderColor := m.styles.BorderColor
 	if m.Task.Deleted == 1 {
 		borderColor = lipgloss.Color("9")
 	}
 	borderStyle := lipgloss.NewStyle().
-		Border(lipgloss.NormalBorder()).
+		Border(lipgloss.RoundedBorder()).
 		BorderForeground(borderColor).
 		Width(width)
 
@@ -153,19 +145,19 @@ func (m TaskViewModel) View(width int) string {
 			lipgloss.Top,
 			borderStyle.Render(
 				"Name:\n",
-				fmt.Sprintf("%s %s", selectedCursor(m.cursor, 0, m.isActive), m.Task.Name),
+				fmt.Sprintf("%s %s", selectedCursor(m.cursor, 0, m.IsActive), m.Task.Name),
 			),
 			borderStyle.Render(
 				"Description:\n",
-				fmt.Sprintf("%s %s", selectedCursor(m.cursor, 1, m.isActive), m.Task.Description),
+				fmt.Sprintf("%s %s", selectedCursor(m.cursor, 1, m.IsActive), m.Task.Description),
 			),
 			borderStyle.Render(
 				"Project_id:\n",
-				fmt.Sprintf("%s %s", selectedCursor(m.cursor, 2, m.isActive), strconv.Itoa(m.Task.Project_id)),
+				fmt.Sprintf("%s %s", selectedCursor(m.cursor, 2, m.IsActive), strconv.Itoa(m.Task.Project_id)),
 			),
 			borderStyle.Render(
 				"Prio:\n",
-				fmt.Sprintf("%s %s", selectedCursor(m.cursor, 3, m.isActive), strconv.Itoa(m.Task.Prio)),
+				fmt.Sprintf("%s %s", selectedCursor(m.cursor, 3, m.IsActive), strconv.Itoa(m.Task.Prio)),
 			),
 		)
 	}

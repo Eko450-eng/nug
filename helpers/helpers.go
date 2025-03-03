@@ -20,8 +20,6 @@ func ConnectToSQLite() (*gorm.DB, error) {
 	CheckErr(err)
 	dirPath := dirs[0]
 
-	LogToFile(fmt.Sprintf("%v", dirs[0]))
-	LogToFile(fmt.Sprintf("%v", appPath))
 	_, statErr := os.Stat(dirPath)
 	if os.IsNotExist(statErr) {
 		err := os.MkdirAll(dirPath, 0o770)
