@@ -64,19 +64,44 @@ func (m CreateModel) UpdateCreateElement(msg tea.Msg) (CreateModel, tea.Cmd) {
 		case "ctrl+c":
 			cmd = tea.Quit
 			return m, cmd
+		case "ctrl+a":
+			if m.EditLine >= 1 {
+				if m.Newtask.Description != "" {
+					m.Newtask.Description = ""
+				}
+				if m.Newtask.Project_id == 0 {
+					m.Newtask.Project_id = 0
+				}
+				if m.Newtask.Prio == 0 {
+					m.Newtask.Prio = 0
+				}
+				if m.Newtask.Prio == 0 {
+					m.Newtask.Completed = 0
+				}
+				m.EditLine = 0
+				db, _ := helpers.ConnectToSQLite()
+				db.Create(&m.Newtask)
+				m.Newtask = helpers.Resettask()
+				m.Exiting = true
+			}
 		case "enter":
 			if m.EditLine < len(m.Fields)-1 {
 				switch current.Question {
 				case "Name":
 					m.Newtask.Name = current.InputField.Value()
+					helpers.LogToFile("NAME ENTERED")
 				case "Description":
 					m.Newtask.Description = current.InputField.Value()
+					helpers.LogToFile("DESC ENTERED")
 				case "Project_id":
 					m.Newtask.Project_id = helpers.SetDefaultInt(current.InputField.Value())
+					helpers.LogToFile("PID ENTERED")
 				case "Prio":
 					m.Newtask.Prio = helpers.SetDefaultInt(current.InputField.Value())
+					helpers.LogToFile("PRIO ENTERED")
 				case "Completed":
 					m.Newtask.Completed = helpers.SetDefaultInt(current.InputField.Value())
+					helpers.LogToFile("COMP ENTERED")
 				}
 				m.EditLine++
 			} else {
