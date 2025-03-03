@@ -142,7 +142,7 @@ func (m TaskViewModel) View(width int) string {
 		borderColor = lipgloss.Color("9")
 	}
 	borderStyle := lipgloss.NewStyle().
-		Border(lipgloss.NormalBorder()).
+		Border(lipgloss.RoundedBorder()).
 		BorderForeground(borderColor).
 		Width(width)
 

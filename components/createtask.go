@@ -64,7 +64,7 @@ func (m CreateModel) UpdateCreateElement(msg tea.Msg) (CreateModel, tea.Cmd) {
 		case "ctrl+c":
 			cmd = tea.Quit
 			return m, cmd
-		case "ctrl+a":
+		case "ctrl+p":
 			if m.EditLine >= 1 {
 				if m.Newtask.Description != "" {
 					m.Newtask.Description = ""

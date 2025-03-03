@@ -1,9 +1,10 @@
 package structs
 
 import (
+	"nask/inputs"
+
 	"github.com/charmbracelet/lipgloss"
 	"gorm.io/gorm"
-	"nask/inputs"
 )
 
 type Styles struct {
@@ -17,7 +18,7 @@ func DefaultStyles() *Styles {
 	s.InputField = lipgloss.
 		NewStyle().
 		BorderForeground(s.BorderColor).
-		BorderStyle(lipgloss.NormalBorder()).
+		BorderStyle(lipgloss.RoundedBorder()).
 		Padding(1).
 		Width(80)
 	return s

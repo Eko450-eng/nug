@@ -163,7 +163,7 @@ func (m model) View() string {
 	rightWidth := m.width - leftWidth
 
 	borderStyle := lipgloss.NewStyle().
-		Border(lipgloss.NormalBorder()).
+		Border(lipgloss.RoundedBorder()).
 		BorderForeground(m.styles.BorderColor)
 
 	if !m.creating {
