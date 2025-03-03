@@ -1,9 +1,9 @@
 package createtask
 
 import (
-	"nask/elements"
-	"nask/helpers"
-	"nask/structs"
+	"nug/elements"
+	"nug/helpers"
+	"nug/structs"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"

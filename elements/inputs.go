@@ -1,8 +1,8 @@
 package elements
 
 import (
-	"nask/inputs"
-	"nask/structs"
+	"nug/inputs"
+	"nug/structs"
 )
 
 func NewQuestion(q string) structs.Questions {

@@ -3,12 +3,12 @@ package main
 import (
 	"os"
 
-	"nask/components/createtask"
-	"nask/components/helpmodal"
-	"nask/components/taskcard"
-	"nask/components/taskoverview"
-	"nask/helpers"
-	"nask/structs"
+	"nug/components/createtask"
+	"nug/components/helpmodal"
+	"nug/components/taskcard"
+	"nug/components/taskoverview"
+	"nug/helpers"
+	"nug/structs"
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"

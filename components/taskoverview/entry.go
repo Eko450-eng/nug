@@ -1,8 +1,8 @@
 package taskoverview
 
 import (
-	"nask/helpers"
-	"nask/structs"
+	"nug/helpers"
+	"nug/structs"
 
 	tea "github.com/charmbracelet/bubbletea"
 )

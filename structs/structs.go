@@ -1,7 +1,7 @@
 package structs
 
 import (
-	"nask/inputs"
+	"nug/inputs"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/lipgloss"

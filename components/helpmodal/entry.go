@@ -1,7 +1,7 @@
 package helpmodal
 
 import (
-	"nask/structs"
+	"nug/structs"
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/lipgloss"

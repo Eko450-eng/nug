@@ -1,4 +1,4 @@
-module nask
+module nug
 
 go 1.24.0
 

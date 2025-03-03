@@ -2,9 +2,9 @@ package taskcard
 
 import (
 	"fmt"
-	"nask/helpers"
-	"nask/inputs"
-	"nask/structs"
+	"nug/helpers"
+	"nug/inputs"
+	"nug/structs"
 	"strconv"
 
 	"github.com/charmbracelet/bubbles/key"
