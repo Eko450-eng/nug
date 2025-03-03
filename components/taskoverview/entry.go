@@ -15,11 +15,11 @@ type Model struct {
 	styles       structs.Styles
 }
 
-func InitModel() Model {
+func InitModel(Show_deleted bool) Model {
 	return Model{
 		Cursor:       0,
 		Selected:     make(map[int]struct{}),
-		Tasks:        helpers.UpdateTasks(false),
+		Tasks:        helpers.UpdateTasks(Show_deleted),
 		styles:       *structs.DefaultStyles(),
 		Show_deleted: false,
 	}

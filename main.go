@@ -26,7 +26,6 @@ const (
 
 type model struct {
 	app_path     string
-	tasks        []structs.Task
 	show_deleted bool
 	selected     map[int]struct{}
 	width        int
@@ -47,14 +46,13 @@ func initModel() model {
 	return model{
 		app_path: app_path,
 		selected: make(map[int]struct{}),
-		tasks:    helpers.UpdateTasks(false),
 		styles:   *structs.DefaultStyles(),
 
 		state: mainState,
 
 		createmodel:  createtask.CreateModel{},
 		taskcard:     taskcard.TaskCardModel{},
-		taskoverview: taskoverview.InitModel(),
+		taskoverview: taskoverview.InitModel(false),
 	}
 }
 
@@ -83,7 +81,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.createmodel = newState
 		if newState.Exiting {
 			m.state = 0
-			m.tasks = helpers.UpdateTasks(m.show_deleted)
 		}
 		return m, cmd
 	case taskState:
@@ -91,12 +88,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmd = newCmd
 		m.taskcard = newState
 		if newState.ChangeEvent {
-			m.tasks = helpers.UpdateTasks(m.show_deleted)
 			m.taskcard.ChangeEvent = false
 		}
 		if newState.Exiting {
 			m.state = 0
-			m.tasks = helpers.UpdateTasks(m.show_deleted)
 		}
 		return m, cmd
 	case mainState:
@@ -123,7 +118,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else if key.Matches(msg, structs.Keymap.Edit) {
 			m.state = taskState
 			m.taskcard.IsActive = true
-			m.taskcard = taskcard.InitModel(m.tasks[m.taskoverview.Cursor], m.taskcard.IsActive)
+			m.taskcard = taskcard.InitModel(m.taskoverview.Tasks[m.taskoverview.Cursor], m.taskcard.IsActive)
 		}
 		return m, cmd
 	}
@@ -133,7 +128,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	s := ""
-	if len(m.tasks) <= 0 {
+	if len(m.taskoverview.Tasks) <= 0 {
 		s += "Coffee for all...."
 	}
 
@@ -152,8 +147,8 @@ func (m model) View() string {
 
 	switch m.state {
 	case mainState:
-		if len(m.tasks) > 0 {
-			m.taskcard = taskcard.InitModel(m.tasks[m.taskoverview.Cursor], m.taskcard.IsActive)
+		if len(m.taskoverview.Tasks) > 0 {
+			m.taskcard = taskcard.InitModel(m.taskoverview.Tasks[m.taskoverview.Cursor], m.taskcard.IsActive)
 		}
 
 		s += lipgloss.Place(
