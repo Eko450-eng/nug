@@ -61,10 +61,15 @@ type keymap struct {
 	SkipForm    key.Binding
 	Back        key.Binding
 	Quit        key.Binding
+	Help        key.Binding
 }
 
 // Keymap reusable key mappings shared across models
 var Keymap = keymap{
+	Help: key.NewBinding(
+		key.WithKeys("?"),
+		key.WithHelp("?", "Help"),
+	),
 	Up: key.NewBinding(
 		key.WithKeys("up", "k"),
 		key.WithHelp("up/k", "Up"),
@@ -114,7 +119,7 @@ var Keymap = keymap{
 		key.WithHelp("esc/h", "back"),
 	),
 	Quit: key.NewBinding(
-		key.WithKeys("ctrl+c", "q"),
-		key.WithHelp("ctrl+c/q", "quit"),
+		key.WithKeys("ctrl+c"),
+		key.WithHelp("ctrl+c", "quit"),
 	),
 }

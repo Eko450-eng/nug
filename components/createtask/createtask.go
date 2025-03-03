@@ -45,6 +45,7 @@ func (m CreateModel) UpdateCreateElement(msg tea.Msg) (CreateModel, tea.Cmd) {
 	case tea.KeyMsg:
 		if key.Matches(msg, structs.Keymap.Quit) {
 			cmd = tea.Quit
+			return m, cmd
 		} else if key.Matches(msg, structs.Keymap.Save) {
 			if m.EditLine < len(m.Fields)-1 {
 				switch current.Question {

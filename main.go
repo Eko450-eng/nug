@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"nask/components/createtask"
+	"nask/components/helpmodal"
 	"nask/components/taskcard"
 	"nask/components/taskoverview"
 	"nask/helpers"
@@ -20,6 +21,7 @@ const (
 	mainState sessionState = iota
 	createState
 	taskState
+	helpState
 )
 
 type model struct {
@@ -35,6 +37,7 @@ type model struct {
 	createmodel  createtask.CreateModel
 	taskcard     taskcard.TaskCardModel
 	taskoverview taskoverview.Model
+	helpmodal    helpmodal.Model
 }
 
 func initModel() model {
@@ -63,6 +66,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch m.state {
+	case helpState:
+		switch msg := msg.(type) {
+		case tea.KeyMsg:
+			if key.Matches(msg, structs.Keymap.Quit) {
+				cmd = tea.Quit
+				return m, cmd
+			} else {
+				m.state = mainState
+				return m, cmd
+			}
+		}
 	case createState:
 		newState, newCmd := m.createmodel.UpdateCreateElement(msg)
 		cmd = newCmd
@@ -96,17 +110,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 	case tea.KeyMsg:
-		if key.Matches(msg, structs.Keymap.Quit) {
+		if key.Matches(msg, structs.Keymap.Help) {
+			m.helpmodal = helpmodal.Init()
+			m.state = helpState
+		} else if key.Matches(msg, structs.Keymap.Quit) {
 			cmd = tea.Quit
-		}
-		if key.Matches(msg, structs.Keymap.Create) {
+		} else if key.Matches(msg, structs.Keymap.Create) {
 			m.state = createState
 			m.createmodel = createtask.InitTaskCreation()
-		}
-		if key.Matches(msg, structs.Keymap.Back) {
+		} else if key.Matches(msg, structs.Keymap.Back) {
 			m.state = mainState
-		}
-		if key.Matches(msg, structs.Keymap.Edit) {
+		} else if key.Matches(msg, structs.Keymap.Edit) {
 			m.state = taskState
 			m.taskcard.IsActive = true
 			m.taskcard = taskcard.InitModel(m.tasks[m.taskoverview.Cursor], m.taskcard.IsActive)
@@ -124,6 +138,7 @@ func (m model) View() string {
 	}
 
 	width := m.width - 10
+	height := m.height - 2
 
 	leftWidth := width / 3
 	rightWidth := width - leftWidth
@@ -148,10 +163,10 @@ func (m model) View() string {
 			lipgloss.Top,
 			lipgloss.JoinHorizontal(
 				lipgloss.Top,
-				borderStyleActive.Width(leftWidth).Height(m.height-10).Render(
+				borderStyleActive.Width(leftWidth).Height(height).Render(
 					m.taskoverview.View(),
 				),
-				borderStyle.Width(rightWidth).Height(m.height-10).Render(
+				borderStyle.Width(rightWidth).Height(height).Render(
 					m.taskcard.View(rightWidth-30),
 				),
 			),
@@ -159,15 +174,15 @@ func (m model) View() string {
 	case taskState:
 		s += lipgloss.Place(
 			m.width,
-			m.height,
+			height,
 			lipgloss.Left,
 			lipgloss.Top,
 			lipgloss.JoinHorizontal(
 				lipgloss.Top,
-				borderStyle.Width(leftWidth).Height(m.height-10).Render(
+				borderStyle.Width(leftWidth).Height(height).Render(
 					m.taskoverview.View(),
 				),
-				borderStyleActive.Width(rightWidth).Height(m.height-10).Render(
+				borderStyleActive.Width(rightWidth).Height(height).Render(
 					m.taskcard.View(rightWidth-30),
 				),
 			),
@@ -182,7 +197,7 @@ func (m model) View() string {
 
 		s += lipgloss.Place(
 			m.width,
-			m.height,
+			height,
 			lipgloss.Center,
 			lipgloss.Center,
 			lipgloss.JoinVertical(
@@ -191,7 +206,11 @@ func (m model) View() string {
 				m.createmodel.View(),
 			),
 		)
+
+	case helpState:
+		s = m.helpmodal.View(m.width, m.height)
 	}
+
 	return s
 }
 
