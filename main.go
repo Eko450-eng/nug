@@ -32,6 +32,7 @@ type model struct {
 	height       int
 	styles       structs.Styles
 	state        sessionState
+	reload       bool
 
 	createmodel  createtask.CreateModel
 	taskcard     taskcard.TaskCardModel
@@ -48,7 +49,8 @@ func initModel() model {
 		selected: make(map[int]struct{}),
 		styles:   *structs.DefaultStyles(),
 
-		state: mainState,
+		state:  mainState,
+		reload: false,
 
 		createmodel:  createtask.CreateModel{},
 		taskcard:     taskcard.TaskCardModel{},
@@ -81,6 +83,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.createmodel = newState
 		if newState.Exiting {
 			m.state = 0
+			m.reload = true
 		}
 		return m, cmd
 	case taskState:
@@ -89,9 +92,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.taskcard = newState
 		if newState.ChangeEvent {
 			m.taskcard.ChangeEvent = false
+			m.reload = true
 		}
 		if newState.Exiting {
 			m.state = 0
+			m.reload = true
 		}
 		return m, cmd
 	case mainState:
@@ -144,6 +149,11 @@ func (m model) View() string {
 	borderStyleActive := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(m.styles.BorderColorActive)
+
+	if m.reload {
+		m.taskoverview.Tasks = helpers.UpdateTasks(m.show_deleted)
+		m.reload = false
+	}
 
 	switch m.state {
 	case mainState:
