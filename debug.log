@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 2025/03/02 23:25:07 stat ./nask.db: no such file or directory
 2025/03/02 23:25:07 unable to open database file: out of memory (14)
 2025/03/02 23:26:05 unable to open database file: out of memory (14)
@@ -11754,3 +11755,5 @@
 2025/03/03 12:46:49 C:\Users\Administrator\AppData\Local\nask/nask.db
 2025/03/03 12:46:49 C:\Users\Administrator\AppData\Local\nask
 2025/03/03 12:46:49 C:\Users\Administrator\AppData\Local\nask/nask.db
+=======
+>>>>>>> 8025b450621160afff0c189618a6ea39d06d989b

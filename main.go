@@ -1,31 +1,42 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
-	"nask/components"
-	"nask/components/taskview"
-	"nask/helpers"
-	"nask/structs"
+	"nug/components/createtask"
+	"nug/components/helpmodal"
+	"nug/components/taskcard"
+	"nug/components/taskoverview"
+	"nug/helpers"
+	"nug/structs"
 
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
+type sessionState int
+
+const (
+	mainState sessionState = iota
+	createState
+	taskState
+	helpState
+)
+
 type model struct {
 	app_path     string
-	tasks        []structs.Task
 	show_deleted bool
-	cursor       int
 	selected     map[int]struct{}
 	width        int
 	height       int
 	styles       structs.Styles
-	createmodel  components.CreateModel
-	taskview     taskview.TaskViewModel
-	creating     bool
-	editing      bool
+	state        sessionState
+
+	createmodel  createtask.CreateModel
+	taskcard     taskcard.TaskCardModel
+	taskoverview taskoverview.Model
+	helpmodal    helpmodal.Model
 }
 
 func initModel() model {
@@ -33,15 +44,15 @@ func initModel() model {
 	helpers.CheckErr(err)
 
 	return model{
-		app_path:    app_path,
-		cursor:      0,
-		selected:    make(map[int]struct{}),
-		tasks:       helpers.UpdateTasks(false),
-		creating:    false,
-		editing:     false,
-		createmodel: components.CreateModel{},
-		taskview:    taskview.TaskViewModel{},
-		styles:      *structs.DefaultStyles(),
+		app_path: app_path,
+		selected: make(map[int]struct{}),
+		styles:   *structs.DefaultStyles(),
+
+		state: mainState,
+
+		createmodel:  createtask.CreateModel{},
+		taskcard:     taskcard.TaskCardModel{},
+		taskoverview: taskoverview.InitModel(false),
 	}
 }
 
@@ -51,101 +62,65 @@ func (m model) Init() tea.Cmd {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
-	switch m.creating {
-	case true:
+
+	switch m.state {
+	case helpState:
+		switch msg := msg.(type) {
+		case tea.KeyMsg:
+			if key.Matches(msg, structs.Keymap.Quit) {
+				cmd = tea.Quit
+				return m, cmd
+			} else {
+				m.state = mainState
+				return m, cmd
+			}
+		}
+	case createState:
 		newState, newCmd := m.createmodel.UpdateCreateElement(msg)
 		cmd = newCmd
 		m.createmodel = newState
 		if newState.Exiting {
-			m.creating = false
-			m.tasks = helpers.UpdateTasks(m.show_deleted)
+			m.state = 0
 		}
 		return m, cmd
-	case false:
-		switch m.editing {
-		case true:
-			newState, newCmd := m.taskview.Update(msg)
-			cmd = newCmd
-			m.taskview = newState
-			if newState.ChangeEvent {
-				m.tasks = helpers.UpdateTasks(m.show_deleted)
-				m.taskview.ChangeEvent = false
-			}
-			if newState.Exiting {
-				m.editing = false
-				m.tasks = helpers.UpdateTasks(m.show_deleted)
-			}
-			return m, cmd
-		case false:
-			switch msg := msg.(type) {
-			case tea.WindowSizeMsg:
-				m.width = msg.Width
-				m.height = msg.Height
-			case tea.KeyMsg:
-				switch msg.String() {
-				case "ctrl+c":
-					cmd = tea.Quit
-				case "c":
-					m.creating = true
-					m.createmodel = components.InitTaskCreation()
-				case "esc":
-					m.creating = false
-				case "r":
-					m.tasks = helpers.UpdateTasks(m.show_deleted)
-				case "k", "up":
-					if m.cursor > 0 {
-						m.cursor--
-					}
-				case "j", "down":
-					if m.cursor < len(m.tasks)-1 {
-						m.cursor++
-					}
-				case "d":
-					m.cursor = 0
-					m.show_deleted = !m.show_deleted
-					m.tasks = helpers.UpdateTasks(m.show_deleted)
-				case "D":
-					db, _ := helpers.ConnectToSQLite()
-					currenttask := m.tasks[m.cursor]
-					if currenttask.Deleted == 1 {
-						db.Model(&structs.Task{}).
-							Where("id = ?", currenttask.Id).
-							Update("Deleted", 0)
-						m.tasks = helpers.UpdateTasks(false)
-						m.show_deleted = false
-						m.cursor = 0
-					} else {
-						db.Model(&structs.Task{}).
-							Where("id = ?", currenttask.Id).
-							Update("Deleted", 1)
-						m.tasks = helpers.UpdateTasks(m.show_deleted)
-						if m.cursor == 0 {
-							m.cursor = 0
-						} else {
-							m.cursor--
-						}
-					}
-
-				case " ":
-					db, _ := helpers.ConnectToSQLite()
-					currenttask := m.tasks[m.cursor]
-					newvalue := 0
-					if currenttask.Completed == 1 {
-						newvalue = 0
-					} else {
-						newvalue = 1
-					}
-					db.Model(&structs.Task{}).
-						Where("id = ?", currenttask.Id).
-						Update("Completed", newvalue)
-					m.tasks = helpers.UpdateTasks(m.show_deleted)
-				case "enter", "l":
-					m.editing = true
-					m.taskview = taskview.InitTaskCreation(m.tasks[m.cursor], true)
-				}
-			}
-
+	case taskState:
+		newState, newCmd := m.taskcard.UpdateTaskCard(msg)
+		cmd = newCmd
+		m.taskcard = newState
+		if newState.ChangeEvent {
+			m.taskcard.ChangeEvent = false
 		}
+		if newState.Exiting {
+			m.state = 0
+		}
+		return m, cmd
+	case mainState:
+		newState, newCmd := m.taskoverview.Update(msg)
+		m.taskoverview = newState
+		cmd = newCmd
+	}
+
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+	case tea.KeyMsg:
+		if key.Matches(msg, structs.Keymap.Help) {
+			m.helpmodal = helpmodal.Init()
+			m.state = helpState
+		} else if key.Matches(msg, structs.Keymap.Quit) {
+			cmd = tea.Quit
+		} else if key.Matches(msg, structs.Keymap.Create) {
+			m.state = createState
+			m.createmodel = createtask.InitTaskCreation()
+		} else if key.Matches(msg, structs.Keymap.Back) {
+			m.state = mainState
+		} else if key.Matches(msg, structs.Keymap.Edit) {
+			m.state = taskState
+			m.taskcard.IsActive = true
+			m.taskcard = taskcard.InitModel(m.taskoverview.Tasks[m.taskoverview.Cursor], m.taskcard.IsActive)
+		}
+		return m, cmd
 	}
 
 	return m, cmd
@@ -153,76 +128,82 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	s := ""
-	if len(m.tasks) <= 0 {
+	if len(m.taskoverview.Tasks) <= 0 {
 		s += "Coffee for all...."
 	}
 
-	tasks := ""
+	width := m.width - 10
+	height := m.height - 2
 
-	leftWidth := m.width / 3
-	rightWidth := m.width - leftWidth
+	leftWidth := width / 3
+	rightWidth := width - leftWidth
 
 	borderStyle := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(m.styles.BorderColor)
+	borderStyleActive := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(m.styles.BorderColorActive)
 
-	if !m.creating {
-		for i, task := range m.tasks {
-			cursor := " "
-			if m.cursor == i {
-				cursor = ">"
-			}
-
-			checked := " "
-			if m.tasks[i].Completed == 1 {
-				checked = "x"
-			}
-			if m.tasks[i].Deleted == 1 {
-				tasks += fmt.Sprintf("%s D-[%s] %s\n", cursor, checked, task.Name)
-			} else {
-				tasks += fmt.Sprintf("%s [%s] %s\n", cursor, checked, task.Name)
-			}
+	switch m.state {
+	case mainState:
+		if len(m.taskoverview.Tasks) > 0 {
+			m.taskcard = taskcard.InitModel(m.taskoverview.Tasks[m.taskoverview.Cursor], m.taskcard.IsActive)
 		}
 
-		if !m.editing && len(m.tasks) > 0 {
-			m.taskview = taskview.InitTaskCreation(m.tasks[m.cursor], false)
-		}
-
-		s = lipgloss.Place(
+		s += lipgloss.Place(
 			m.width,
 			m.height,
 			lipgloss.Left,
 			lipgloss.Top,
 			lipgloss.JoinHorizontal(
 				lipgloss.Top,
-				borderStyle.Width(leftWidth).Height(m.height-10).Render(
-					tasks,
+				borderStyleActive.Width(leftWidth).Height(height).Render(
+					m.taskoverview.View(),
 				),
-				borderStyle.Width(rightWidth).Height(m.height-10).Render(
-					m.taskview.View(rightWidth-30),
+				borderStyle.Width(rightWidth).Height(height).Render(
+					m.taskcard.View(rightWidth-30),
 				),
 			),
 		)
-	} else {
-		createModelView := m.createmodel.View()
+	case taskState:
+		s += lipgloss.Place(
+			m.width,
+			height,
+			lipgloss.Left,
+			lipgloss.Top,
+			lipgloss.JoinHorizontal(
+				lipgloss.Top,
+				borderStyle.Width(leftWidth).Height(height).Render(
+					m.taskoverview.View(),
+				),
+				borderStyleActive.Width(rightWidth).Height(height).Render(
+					m.taskcard.View(rightWidth-30),
+				),
+			),
+		)
 
+	case createState:
 		if len(m.createmodel.Fields) == 0 {
 			return "No fields to display."
 		}
 
 		current := m.createmodel.Fields[m.createmodel.EditLine]
 
-		s = lipgloss.Place(
+		s += lipgloss.Place(
 			m.width,
-			m.height,
+			height,
 			lipgloss.Center,
 			lipgloss.Center,
 			lipgloss.JoinVertical(
 				lipgloss.Center,
 				current.Question,
-				createModelView,
+				m.createmodel.View(),
 			),
 		)
+
+	case helpState:
+		s = m.helpmodal.View(m.width, m.height)
 	}
 
 	return s

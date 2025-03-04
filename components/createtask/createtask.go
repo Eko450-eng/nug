@@ -1,10 +1,11 @@
-package components
+package createtask
 
 import (
-	"nask/helpers"
-	"nask/inputs"
-	"nask/structs"
+	"nug/elements"
+	"nug/helpers"
+	"nug/structs"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -18,31 +19,13 @@ type CreateModel struct {
 	createInputFields textinput.Model
 }
 
-func newQuestion(q string) structs.Questions {
-	return structs.Questions{Question: q}
-}
-
-func newShortQuestion(q string) structs.Questions {
-	question := newQuestion(q)
-	model := inputs.NewShortAnswerField()
-	question.InputField = model
-	return question
-}
-
-func newLongQuestion(q string) structs.Questions {
-	question := newQuestion(q)
-	model := inputs.NewLongAnswerField()
-	question.InputField = model
-	return question
-}
-
 func InitTaskCreation() CreateModel {
 	questions := []structs.Questions{
-		newShortQuestion("Name"),
-		newLongQuestion("Description"),
-		newShortQuestion("Project_id"),
-		newShortQuestion("Prio"),
-		newShortQuestion("Completed"),
+		elements.NewShortQuestion("Name"),
+		elements.NewLongQuestion("Description"),
+		elements.NewShortQuestion("Project_id"),
+		elements.NewShortQuestion("Prio"),
+		elements.NewShortQuestion("Completed"),
 	}
 
 	return CreateModel{
@@ -60,31 +43,10 @@ func (m CreateModel) UpdateCreateElement(msg tea.Msg) (CreateModel, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c":
+		if key.Matches(msg, structs.Keymap.Quit) {
 			cmd = tea.Quit
 			return m, cmd
-		case "ctrl+p":
-			if m.EditLine >= 1 {
-				if m.Newtask.Description != "" {
-					m.Newtask.Description = ""
-				}
-				if m.Newtask.Project_id == 0 {
-					m.Newtask.Project_id = 0
-				}
-				if m.Newtask.Prio == 0 {
-					m.Newtask.Prio = 0
-				}
-				if m.Newtask.Prio == 0 {
-					m.Newtask.Completed = 0
-				}
-				m.EditLine = 0
-				db, _ := helpers.ConnectToSQLite()
-				db.Create(&m.Newtask)
-				m.Newtask = helpers.Resettask()
-				m.Exiting = true
-			}
-		case "enter":
+		} else if key.Matches(msg, structs.Keymap.Save) {
 			if m.EditLine < len(m.Fields)-1 {
 				switch current.Question {
 				case "Name":
@@ -111,13 +73,11 @@ func (m CreateModel) UpdateCreateElement(msg tea.Msg) (CreateModel, tea.Cmd) {
 				m.Newtask = helpers.Resettask()
 				m.Exiting = true
 			}
-		default:
+		} else {
 			current.InputField, cmd = current.InputField.Update(msg)
-			return m, cmd
 		}
 	}
 
-	current.InputField, cmd = current.InputField.Update(msg)
 	return m, cmd
 }
 

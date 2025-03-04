@@ -6,7 +6,7 @@ import (
 	"os"
 	"strconv"
 
-	"nask/structs"
+	"nug/structs"
 
 	"github.com/glebarez/sqlite"
 	gap "github.com/muesli/go-app-paths"
@@ -14,14 +14,12 @@ import (
 )
 
 func ConnectToSQLite() (*gorm.DB, error) {
-	scope := gap.NewScope(gap.User, "nask")
+	scope := gap.NewScope(gap.User, "nug")
 	dirs, err := scope.DataDirs()
-	appPath := dirs[0] + "/nask.db"
+	appPath := dirs[0] + "/nug.db"
 	CheckErr(err)
 	dirPath := dirs[0]
 
-	LogToFile(fmt.Sprintf("%v", dirs[0]))
-	LogToFile(fmt.Sprintf("%v", appPath))
 	_, statErr := os.Stat(dirPath)
 	if os.IsNotExist(statErr) {
 		err := os.MkdirAll(dirPath, 0o770)
