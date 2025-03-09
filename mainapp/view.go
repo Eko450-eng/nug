@@ -10,11 +10,6 @@ func (m model) View() string {
 		s += "Coffee for all...."
 	}
 
-	width := m.width - 10
-
-	leftWidth := width / 3
-	rightWidth := width - leftWidth
-
 	switch m.state {
 	case mainState:
 		s += m.taskoverview.View(m.width, m.height)
@@ -24,7 +19,7 @@ func (m model) View() string {
 			m.height,
 			lipgloss.Left,
 			lipgloss.Top,
-			m.calendar.View(rightWidth-30, m.height),
+			m.calendar.View(m.width, m.height),
 		)
 
 	case helpState:

@@ -26,6 +26,9 @@ type Model struct {
 	state        sessionState
 	taskcard     taskcard.TaskCardModel
 	createmodel  createtask.CreateModel
+
+	Width  int
+	Height int
 }
 
 func (m Model) UpdateTasks() []structs.Task {

@@ -38,6 +38,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
+		m.taskoverview.Width = m.width
+		m.taskoverview.Height = m.height
 	case tea.KeyMsg:
 		if key.Matches(msg, structs.Keymap.TabSwitch) {
 			switch m.state {

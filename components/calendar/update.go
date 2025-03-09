@@ -15,6 +15,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	_, r := 2025, month
 
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
 	case tea.KeyMsg:
 		if key.Matches(msg, structs.Keymap.Up) && m.Selected < DaysInMonth(time.Now().Year(), r) {
 			m.Selected++

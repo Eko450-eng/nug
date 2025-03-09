@@ -10,12 +10,17 @@ import (
 type Model struct {
 	Selected int
 	styles   structs.Styles
+	width    int
+	height   int
 }
 
-func InitModel() Model {
+func InitModel(width, height int) Model {
 	return Model{
 		Selected: time.Now().Day(),
 		styles:   *structs.DefaultStyles(),
+
+		width:  width,
+		height: height,
 	}
 }
 
