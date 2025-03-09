@@ -56,18 +56,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate Changelog
-        id: changelog
-        run: |
-          echo "Generating changelog..."
-          gh api repos/${{ github.repository }}/releases/latest --jq '.tag_name' | xargs -I {} git log {}..HEAD --pretty=format:"- %s" > CHANGELOG.md
-          cat CHANGELOG.md
-          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-          cat CHANGELOG.md >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Create Pre-Release
         run: |
           gh release create ${{ env.NEW_VERSION }} --prerelease --notes "${{ env.CHANGELOG }}" --title "Release ${{ env.NEW_VERSION }}"
