@@ -1,10 +1,7 @@
-name: Build
+name: Build and Release
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
     branches:
       - main
 
@@ -37,3 +34,55 @@ jobs:
         with:
           name: nug-${{ matrix.goos }}-${{ matrix.goarch }}
           path: dist/nug-${{ matrix.goos }}-${{ matrix.goarch }}
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Get Latest Release
+        id: get_version
+        run: |
+          latest_version=$(gh release list --limit 1 --json tagName -q '.[0].tagName' || echo "v0.0.0")
+          echo "Latest version: $latest_version"
+          IFS='.' read -r major minor patch <<< "${latest_version#v}"
+          new_version="v$major.$minor.$((patch+1))"
+          echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate Changelog
+        id: changelog
+        run: |
+          echo "Generating changelog..."
+          gh api repos/${{ github.repository }}/releases/latest --jq '.tag_name' | xargs -I {} git log {}..HEAD --pretty=format:"- %s" > CHANGELOG.md
+          cat CHANGELOG.md
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          cat CHANGELOG.md >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Pre-Release
+        run: |
+          gh release create ${{ env.NEW_VERSION }} --prerelease --notes "${{ env.CHANGELOG }}" --title "Release ${{ env.NEW_VERSION }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Upload Assets to Release
+        run: |
+          for file in dist/*/*; do
+            gh release upload ${{ env.NEW_VERSION }} "$file"
+          done
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
