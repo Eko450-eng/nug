@@ -41,6 +41,36 @@ type Task struct {
 	Deleted     int
 }
 
+type Tags struct {
+	gorm.Model
+	Id          int `gorm:"primaryKey`
+	Name        string
+	Deleted     int
+	Deletedtime string
+}
+
+type Tag_to_task struct {
+	gorm.Model
+	Id   int `gorm:"primaryKey"`
+	Tag  int
+	Task int
+}
+
+type Project struct {
+	gorm.Model
+	Id          int `gorm:"primaryKey`
+	Name        string
+	Deleted     int
+	Deletedtime string
+}
+
+type Task_to_Project struct {
+	gorm.Model
+	Id      int `gorm:"primaryKey"`
+	Task    int
+	Project int
+}
+
 type Questions struct {
 	Question   string
 	Answer     string
@@ -62,41 +92,50 @@ type keymap struct {
 	Back        key.Binding
 	Quit        key.Binding
 	Help        key.Binding
+	TabSwitch   key.Binding
 }
 
 // Keymap reusable key mappings shared across models
 var Keymap = keymap{
+	TabSwitch: key.NewBinding(
+		key.WithKeys("tab"),
+		key.WithHelp("Tab", "Switch focus"),
+	),
 	Help: key.NewBinding(
 		key.WithKeys("?"),
 		key.WithHelp("?", "Help"),
-	),
-	Up: key.NewBinding(
-		key.WithKeys("up", "k"),
-		key.WithHelp("up/k", "Up"),
-	),
-	Down: key.NewBinding(
-		key.WithKeys("down", "j"),
-		key.WithHelp("down/j", "down"),
 	),
 	Left: key.NewBinding(
 		key.WithKeys("left", "h"),
 		key.WithHelp("left/h", "Left"),
 	),
+	Down: key.NewBinding(
+		key.WithKeys("down", "j"),
+		key.WithHelp("down/j", "down"),
+	),
+	Up: key.NewBinding(
+		key.WithKeys("up", "k"),
+		key.WithHelp("up/k", "Up"),
+	),
+	Edit: key.NewBinding(
+		key.WithKeys("l"),
+		key.WithHelp("l", "Edit"),
+	),
+	Back: key.NewBinding(
+		key.WithKeys("esc", "h"),
+		key.WithHelp("esc/h", "back"),
+	),
 	Right: key.NewBinding(
 		key.WithKeys("right", "l"),
 		key.WithHelp("right/l", "Right"),
-	),
-	Edit: key.NewBinding(
-		key.WithKeys("e"),
-		key.WithHelp("e", "Edit"),
 	),
 	Create: key.NewBinding(
 		key.WithKeys("c"),
 		key.WithHelp("c", "New"),
 	),
 	Save: key.NewBinding(
-		key.WithKeys("enter"),
-		key.WithHelp("enter", "Save"),
+		key.WithKeys("ctrl+s"),
+		key.WithHelp("ctrl+enter", "Save"),
 	),
 	Check: key.NewBinding(
 		key.WithKeys(" "),
@@ -113,10 +152,6 @@ var Keymap = keymap{
 	SkipForm: key.NewBinding(
 		key.WithKeys("ctrl+p"),
 		key.WithHelp("ctrl+p", "QuickSave"),
-	),
-	Back: key.NewBinding(
-		key.WithKeys("esc", "h"),
-		key.WithHelp("esc/h", "back"),
 	),
 	Quit: key.NewBinding(
 		key.WithKeys("ctrl+c"),

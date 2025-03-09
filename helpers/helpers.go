@@ -38,9 +38,6 @@ func ConnectToSQLite() (*gorm.DB, error) {
 	db, err := gorm.Open(sqlite.Open(appPath), &gorm.Config{})
 	CheckErr(err)
 
-	// Create DB
-	db.AutoMigrate(&structs.Task{})
-
 	var tasks []structs.Task
 	db.Find(&tasks)
 	if len(tasks) <= 0 {
@@ -91,21 +88,21 @@ func Resettask() structs.Task {
 	}
 }
 
-func UpdateTasks(show_deleted bool) []structs.Task {
+func UpdateTasks() []structs.Task {
 	var tasks []structs.Task
 	db, _ := ConnectToSQLite()
-	if show_deleted {
-		if res := db.
-			Find(&tasks); res.Error != nil {
-			panic(res.Error)
-		}
-	} else {
-		if res := db.
-			Where("deleted = ?", 0).
-			Find(&tasks); res.Error != nil {
-			panic(res.Error)
-		}
+	// if show_deleted {
+	// 	if res := db.
+	// 		Find(&tasks); res.Error != nil {
+	// 		panic(res.Error)
+	// 	}
+	// } else {
+	if res := db.
+		Where("deleted = ?", 0).
+		Find(&tasks); res.Error != nil {
+		panic(res.Error)
 	}
+	// }
 	return tasks
 }
 
