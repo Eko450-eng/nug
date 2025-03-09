@@ -23,7 +23,7 @@ func (m Model) UpdateMain(msg tea.Msg) (Model, tea.Cmd) {
 		} else if key.Matches(msg, structs.Keymap.ShowDeleted) {
 			m.Cursor = 0
 			m.show_deleted = !m.show_deleted
-			m.Reload = true
+			m.Tasks = m.UpdateTasks()
 		} else if key.Matches(msg, structs.Keymap.Delete) {
 			db, _ := helpers.ConnectToSQLite()
 			currenttask := m.Tasks[m.Cursor]
@@ -31,13 +31,13 @@ func (m Model) UpdateMain(msg tea.Msg) (Model, tea.Cmd) {
 				db.Model(&structs.Task{}).
 					Where("id = ?", currenttask.Id).
 					Update("Deleted", 0)
-				m.Reload = true
+				m.Tasks = m.UpdateTasks()
 				m.Cursor = 0
 			} else {
 				db.Model(&structs.Task{}).
 					Where("id = ?", currenttask.Id).
 					Update("Deleted", 1)
-				m.Reload = true
+				m.Tasks = m.UpdateTasks()
 				if m.Cursor == 0 {
 					m.Cursor = 0
 				} else {
@@ -57,7 +57,7 @@ func (m Model) UpdateMain(msg tea.Msg) (Model, tea.Cmd) {
 			db.Model(&structs.Task{}).
 				Where("id = ?", currenttask.Id).
 				Update("Completed", newvalue)
-			m.Reload = true
+			m.Tasks = m.UpdateTasks()
 		} else if key.Matches(msg, structs.Keymap.Edit) {
 			m.taskcard.IsActive = true
 			m.taskcard.Task = m.Tasks[m.Cursor]

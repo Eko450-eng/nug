@@ -35,6 +35,7 @@ type Task struct {
 	Project_id  int
 	Prio        int
 	Time        string
+	Date        string
 	Deletedtime string
 	Modified    string
 	Completed   int

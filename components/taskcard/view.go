@@ -47,7 +47,7 @@ func (m TaskCardModel) View(width int) string {
 				fmt.Sprintf("Prio:\n%s %s", selectedCursor(m.cursor, 3, m.IsActive), strconv.Itoa(m.Task.Prio)),
 			),
 			borderStyle.Render(
-				fmt.Sprintf("Time:\n%s %s", selectedCursor(m.cursor, 4, m.IsActive), m.Task.Time),
+				fmt.Sprintf("Date:\n%s %s", selectedCursor(m.cursor, 4, m.IsActive), m.Task.Date),
 			),
 		)
 	}

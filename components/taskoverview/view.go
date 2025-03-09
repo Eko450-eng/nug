@@ -9,10 +9,9 @@ import (
 func (m Model) View(width, height int) string {
 	tasks := ""
 
-	if m.Reload || m.createmodel.Exiting {
+	if m.createmodel.Exiting {
 		m.state = mainState
 		m.Tasks = m.UpdateTasks()
-		m.Reload = false
 		m.createmodel.Exiting = false
 	}
 

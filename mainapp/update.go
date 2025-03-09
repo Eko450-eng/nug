@@ -3,6 +3,7 @@ package mainapp
 import (
 	"nug/components/helpmodal"
 	"nug/structs"
+	"time"
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -41,6 +42,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if key.Matches(msg, structs.Keymap.TabSwitch) {
 			switch m.state {
 			case mainState:
+				m.calendar.Selected = time.Now().Day() - 1
 				m.state = calendarState
 			default:
 				m.state = mainState

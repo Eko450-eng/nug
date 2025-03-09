@@ -10,6 +10,20 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+func dayHasTask(date string) []structs.Task {
+	var tasks []structs.Task
+
+	db, _ := helpers.ConnectToSQLite()
+
+	if res := db.
+		Where("date = ?", helpers.NormalizeDate(date)).
+		Find(&tasks); res.Error != nil {
+		panic(res.Error)
+	}
+
+	return tasks
+}
+
 func getTasks() []structs.Task {
 	var tasks []structs.Task
 
@@ -23,62 +37,111 @@ func getTasks() []structs.Task {
 	return tasks
 }
 
-func (m Model) View(width, height int) string {
+var borderStyle = lipgloss.NewStyle().
+	Border(lipgloss.RoundedBorder()).
+	BorderForeground(lipgloss.Color("9")).
+	MarginTop(1).
+	Width(50 / 7).
+	Align(lipgloss.Center)
+
+var borderStyleHeader = borderStyle.BorderForeground(lipgloss.Color("#8ecae6"))
+var borderStyleToday = borderStyle.BorderForeground(lipgloss.Color("#219ebc"))
+var borderStyleActive = borderStyle.BorderForeground(lipgloss.Color("#ffb703"))
+var borderStyleTodayActive = borderStyle.BorderForeground(lipgloss.Color("#c1121f"))
+
+func displayHeader() string {
+	res := fmt.Sprintf("%s", time.Now().Month().String())
+
+	res += lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		borderStyleHeader.Render("Mon"),
+		borderStyleHeader.Render("Tue"),
+		borderStyleHeader.Render("Wed"),
+		borderStyleHeader.Render("Thu"),
+		borderStyleHeader.Render("Fri"),
+		borderStyleHeader.Render("Sat"),
+		borderStyleHeader.Render("Sun"),
+	)
+
+	return res
+}
+
+func (m Model) displayWeekLine() string {
+	res := ""
+
 	month := time.Now().Local().Month()
 
 	_, r := 2025, month
 
-	borderStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("9")).
-		MarginTop(1).
-		Width(5).
-		Align(lipgloss.Center)
-
-	borderStyleToday := borderStyle.BorderForeground(lipgloss.Color("6"))
-	borderStyleHeader := borderStyle.BorderForeground(lipgloss.Color("8"))
-	borderStyleActive := borderStyle.BorderForeground(lipgloss.Color("3"))
-	borderStyleTodayActive := borderStyle.BorderForeground(lipgloss.Color("0"))
-
 	elements := []string{}
-	firstWeekday := time.Date(time.Now().Year(), time.Now().Month(), 1, 0, 0, 0, 0, time.UTC).Local().Weekday().String()[0:3]
-	secondWeekday := time.Date(time.Now().Year(), time.Now().Month(), 2, 0, 0, 0, 0, time.UTC).Local().Weekday().String()[0:3]
-	thirdWeekday := time.Date(time.Now().Year(), time.Now().Month(), 3, 0, 0, 0, 0, time.UTC).Local().Weekday().String()[0:3]
-	fourthWeekday := time.Date(time.Now().Year(), time.Now().Month(), 4, 0, 0, 0, 0, time.UTC).Local().Weekday().String()[0:3]
-	fifthWeekday := time.Date(time.Now().Year(), time.Now().Month(), 5, 0, 0, 0, 0, time.UTC).Local().Weekday().String()[0:3]
-	sixthWeekday := time.Date(time.Now().Year(), time.Now().Month(), 6, 0, 0, 0, 0, time.UTC).Local().Weekday().String()[0:3]
-	seventWeekday := time.Date(time.Now().Year(), time.Now().Month(), 7, 0, 0, 0, 0, time.UTC).Local().Weekday().String()[0:3]
 
-	left := ""
-	left +=
-		borderStyle.Width(width / 3).Render(
-			lipgloss.JoinHorizontal(
-				lipgloss.Top,
-				borderStyleHeader.Render(firstWeekday),
-				borderStyleHeader.Render(secondWeekday),
-				borderStyleHeader.Render(thirdWeekday),
-				borderStyleHeader.Render(fourthWeekday),
-				borderStyleHeader.Render(fifthWeekday),
-				borderStyleHeader.Render(sixthWeekday),
-				borderStyleHeader.Render(seventWeekday),
-			),
-		)
+	placeholders := 0
+	firstDay := time.Date(time.Now().Year(), time.Now().Month(), 1, 0, 0, 0, 0, time.UTC).Local().Weekday()
+	switch firstDay {
+	case time.Monday:
+		placeholders += 0
+	case time.Tuesday:
+		placeholders += 1
+	case time.Wednesday:
+		placeholders += 2
+	case time.Thursday:
+		placeholders += 3
+	case time.Friday:
+		placeholders += 4
+	case time.Saturday:
+		placeholders += 5
+	case time.Sunday:
+		placeholders += 6
+	}
+
+	placeHolderRows := ""
+	style := borderStyle.BorderForeground(lipgloss.Color("#c1121f"))
+
+	boxes := []string{}
+
+	for p := 1; p <= placeholders; p++ {
+		boxes = append(boxes, style.Render(" "))
+	}
+
+	placeHolderRows += lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		boxes...,
+	)
+
+	placeHolderRowsJoined := lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		placeHolderRows,
+	)
+
+	elements = append(elements, placeHolderRowsJoined)
 
 	for i := 1; i <= DaysInMonth(time.Now().Year(), r); i++ {
 		row := ""
-		if i == time.Now().Day() && i-1 == m.Selected {
-			row += borderStyleTodayActive.Render(strconv.Itoa(i))
+
+		if time.Now().Day() == i && i-1 == m.Selected {
+			style = borderStyleTodayActive
 		} else if i == time.Now().Day() {
-			row += borderStyleToday.Render(strconv.Itoa(i))
+			style = borderStyleToday
 		} else if i-1 == m.Selected {
-			row += borderStyleActive.Render(strconv.Itoa(i))
+			style = borderStyleActive
 		} else {
-			row += borderStyle.Render(strconv.Itoa(i))
+			style = borderStyle
+		}
+
+		year := strconv.Itoa(time.Now().Year())
+		month := time.Now().Month()
+
+		tasks := dayHasTask(fmt.Sprintf("%s.%s.%s", strconv.Itoa(i), strconv.Itoa(int(month)), year))
+
+		if len(tasks) > 0 {
+			row += style.Foreground(lipgloss.Color("#c1121f")).Render(strconv.Itoa(i))
+		} else {
+			row += style.Render(strconv.Itoa(i))
 		}
 
 		elements = append(elements, row)
-		if i%7 == 0 {
-			left += lipgloss.JoinHorizontal(
+		if (i+placeholders)%7 == 0 {
+			res += lipgloss.JoinHorizontal(
 				lipgloss.Top,
 				elements...,
 			)
@@ -86,6 +149,17 @@ func (m Model) View(width, height int) string {
 		}
 	}
 
+	if len(elements) > 0 {
+		res += lipgloss.JoinHorizontal(
+			lipgloss.Top,
+			elements...,
+		)
+	}
+
+	return res
+}
+
+func (m Model) View(width, height int) string {
 	right := ""
 	for _, task := range getTasks() {
 
@@ -94,20 +168,27 @@ func (m Model) View(width, height int) string {
 
 		selected_date := time.Date(year, month, m.Selected+1, 0, 0, 0, 0, time.UTC)
 
-		if task.Time == selected_date.Format("02.01.2006") {
-			right += fmt.Sprintf("Task: %s - %s \n", task.Name, task.Time)
+		if task.Date == selected_date.Format("2.1.2006") {
+			right += fmt.Sprintf("Task: %s - %s \n", task.Name, task.Date)
 		}
 	}
 
-	left = lipgloss.JoinHorizontal(
-		lipgloss.Center,
-		left,
-		borderStyle.Width(width/2).Render(
-			right,
-		),
+	left := lipgloss.JoinVertical(
+		lipgloss.Top,
+		displayHeader(),
+		m.displayWeekLine(),
 	)
 
-	return left
+	res := lipgloss.JoinHorizontal(
+		lipgloss.Center,
+		left,
+		borderStyle.
+			Width(width/2).
+			Height(height/2).
+			Render(right),
+	)
+
+	return res
 }
 
 func DaysInMonth(year int, month time.Month) int {

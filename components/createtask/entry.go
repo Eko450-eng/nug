@@ -14,6 +14,7 @@ type CreateModel struct {
 	styles            structs.Styles
 	Exiting           bool
 	createInputFields textinput.Model
+	current           structs.Questions
 }
 
 func InitTaskCreation() CreateModel {
@@ -22,13 +23,12 @@ func InitTaskCreation() CreateModel {
 		elements.NewLongQuestion("Description"),
 		elements.NewShortQuestion("Project_id"),
 		elements.NewShortQuestion("Prio"),
-		elements.NewShortQuestion("Completed"),
-		elements.NewShortQuestion("Time"),
 	}
 
 	return CreateModel{
 		EditLine: 0,
 		Fields:   questions,
+		current:  questions[0],
 		Newtask:  structs.Task{},
 		styles:   *structs.DefaultStyles(),
 		Exiting:  false,

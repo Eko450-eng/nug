@@ -22,7 +22,7 @@ func (m TaskCardModel) UpdateTaskCard(msg tea.Msg) (TaskCardModel, tea.Cmd) {
 				db, _ := helpers.ConnectToSQLite()
 				db.Model(&structs.Task{}).
 					Where("id = ?", m.Task.Id).
-					Update(m.current.Question, m.current.InputField.Value()).
+					Update(m.current.Question, helpers.NormalizeDate(m.current.InputField.Value())).
 					Update("Updatedtime", time.Now())
 
 				m.Editing = false
@@ -43,8 +43,8 @@ func (m TaskCardModel) UpdateTaskCard(msg tea.Msg) (TaskCardModel, tea.Cmd) {
 					m.current.InputField.SetValue(strconv.Itoa(m.Task.Project_id))
 				case "Prio":
 					m.current.InputField.SetValue(strconv.Itoa(m.Task.Prio))
-				case "Time":
-					m.current.InputField.SetValue(m.Task.Time)
+				case "Date":
+					m.current.InputField.SetValue(helpers.NormalizeDate(m.Task.Date))
 				}
 			} else if key.Matches(msg, structs.Keymap.Save) {
 				value := ""
@@ -57,8 +57,8 @@ func (m TaskCardModel) UpdateTaskCard(msg tea.Msg) (TaskCardModel, tea.Cmd) {
 					value = strconv.Itoa(m.Task.Project_id)
 				case "Prio":
 					value = strconv.Itoa(m.Task.Prio)
-				case "Time":
-					value = m.Task.Time
+				case "Date":
+					value = helpers.NormalizeDate(m.Task.Date)
 				}
 				m.current.InputField.SetValue(value)
 			} else if key.Matches(msg, structs.Keymap.Up) && m.cursor > 0 {

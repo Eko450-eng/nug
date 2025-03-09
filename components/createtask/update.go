@@ -1,6 +1,7 @@
 package createtask
 
 import (
+	"fmt"
 	"nug/helpers"
 	"nug/structs"
 
@@ -10,8 +11,8 @@ import (
 
 func (m CreateModel) UpdateCreateElement(msg tea.Msg) (CreateModel, tea.Cmd) {
 	var cmd tea.Cmd
-	current := &m.Fields[m.EditLine]
 
+	m.current = m.Fields[m.EditLine]
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if key.Matches(msg, structs.Keymap.Quit) {
@@ -19,30 +20,35 @@ func (m CreateModel) UpdateCreateElement(msg tea.Msg) (CreateModel, tea.Cmd) {
 			return m, cmd
 		} else if key.Matches(msg, structs.Keymap.Save) {
 			if m.EditLine < len(m.Fields)-1 {
-				switch current.Question {
+				switch m.current.Question {
 				case "Name":
-					m.Newtask.Name = current.InputField.Value()
+					m.Newtask.Name = m.current.InputField.Value()
 				case "Description":
-					m.Newtask.Description = current.InputField.Value()
+					m.Newtask.Description = m.current.InputField.Value()
 				case "Project_id":
-					m.Newtask.Project_id = helpers.SetDefaultInt(current.InputField.Value())
+					m.Newtask.Project_id = helpers.SetDefaultInt(m.current.InputField.Value())
 				case "Prio":
-					m.Newtask.Prio = helpers.SetDefaultInt(current.InputField.Value())
+					m.Newtask.Prio = helpers.SetDefaultInt(m.current.InputField.Value())
 				case "Completed":
-					m.Newtask.Completed = helpers.SetDefaultInt(current.InputField.Value())
-				case "Time":
-					m.Newtask.Time = current.InputField.Value()
+					m.Newtask.Completed = helpers.SetDefaultInt(m.current.InputField.Value())
+				case "Date":
+					m.Newtask.Date = helpers.NormalizeDate(m.createInputFields.Value())
 				}
 				m.EditLine++
 			} else {
 				m.EditLine = 0
 				db, _ := helpers.ConnectToSQLite()
+
+				helpers.LogToFile(fmt.Sprintf("NotNormalized: %s", m.Newtask.Date))
+				m.Newtask.Date = helpers.NormalizeDate(m.Newtask.Date)
+				helpers.LogToFile(fmt.Sprintf("Normalized: %s", m.Newtask.Date))
+
 				db.Create(&m.Newtask)
 				m.Newtask = helpers.Resettask()
 				m.Exiting = true
 			}
 		} else {
-			current.InputField, cmd = current.InputField.Update(msg)
+			m.current.InputField, cmd = m.current.InputField.Update(msg)
 		}
 	}
 

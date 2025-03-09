@@ -23,7 +23,6 @@ type Model struct {
 	Cursor       int
 	selected     map[int]struct{}
 	styles       structs.Styles
-	Reload       bool
 	state        sessionState
 	taskcard     taskcard.TaskCardModel
 	createmodel  createtask.CreateModel
@@ -57,7 +56,6 @@ func InitModel() Model {
 		Tasks:        tasks,
 		styles:       *structs.DefaultStyles(),
 		show_deleted: false,
-		Reload:       false,
 		state:        mainState,
 		taskcard:     taskcard.InitModel(tasks[0], false),
 		createmodel:  createtask.CreateModel{},

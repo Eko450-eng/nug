@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"nug/structs"
 
@@ -117,4 +118,17 @@ func LogToFile(message string) {
 	// Set log output to the file
 	logger := log.New(file, "", log.LstdFlags)
 	logger.Println(message)
+}
+
+func NormalizeDate(date string) string {
+	parts := strings.Split(date, ".")
+	if len(parts) != 3 {
+		return date // Invalid format, return as-is
+	}
+
+	day, _ := strconv.Atoi(parts[0])   // Convert to int to remove leading zeros
+	month, _ := strconv.Atoi(parts[1]) // Convert to int to remove leading zeros
+	year := parts[2]                   // Keep year as a string
+
+	return fmt.Sprintf("%d.%d.%s", day, month, year)
 }

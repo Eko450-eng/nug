@@ -2,6 +2,7 @@ package calendar
 
 import (
 	"nug/structs"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -13,7 +14,7 @@ type Model struct {
 
 func InitModel() Model {
 	return Model{
-		Selected: 0,
+		Selected: time.Now().Day(),
 		styles:   *structs.DefaultStyles(),
 	}
 }

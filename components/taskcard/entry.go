@@ -30,7 +30,7 @@ func InitModel(task structs.Task, isActive bool) TaskCardModel {
 		elements.NewLongQuestion("Description"),
 		elements.NewShortQuestion("Project_id"),
 		elements.NewShortQuestion("Prio"),
-		elements.NewShortQuestion("Time"),
+		elements.NewShortQuestion("Date"),
 	}
 
 	return TaskCardModel{
