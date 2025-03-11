@@ -43,7 +43,9 @@ func (m Model) UpdateMain(msg tea.Msg) (Model, tea.Cmd) {
 				} else {
 					m.Cursor--
 				}
-				m.taskcard.Task = m.Tasks[m.Cursor]
+				if len(m.Tasks) > 0 {
+					m.taskcard.Task = m.Tasks[m.Cursor]
+				}
 			}
 		} else if key.Matches(msg, structs.Keymap.Check) {
 			db, _ := helpers.ConnectToSQLite()
@@ -86,7 +88,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if key.Matches(msg, key.NewBinding(key.WithKeys("r"))) {
+		if key.Matches(msg, structs.Keymap.Sync) {
+			helpers.SyncToWebDav()
+		} else if key.Matches(msg, key.NewBinding(key.WithKeys("r"))) {
 			m.Tasks = m.UpdateTasks()
 		}
 	}

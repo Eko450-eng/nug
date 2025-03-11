@@ -9,15 +9,52 @@ import (
 
 	"nug/structs"
 
+	"net/http"
+
 	"github.com/glebarez/sqlite"
 	gap "github.com/muesli/go-app-paths"
 	"gorm.io/gorm"
 )
 
+func SyncToWebDav() {
+	url := os.Getenv("NUG_URL")
+	username := os.Getenv("NUG_USERNAME")
+	password := os.Getenv("NUG_PASSWORD")
+
+	LogToFile(fmt.Sprintf("URL: %s", url))
+	LogToFile(fmt.Sprintf("User: %s", username))
+	LogToFile(fmt.Sprintf("pass: %s", password))
+
+	scope := gap.NewScope(gap.User, "nug")
+	dirs, err := scope.DataDirs()
+	appPath := dirs[0] + "/nug.db"
+
+	file, err := os.Open(appPath)
+	req, err := http.NewRequest("PUT", url, file)
+
+	if username != "" && password != "" {
+		req.SetBasicAuth(username, password)
+	}
+
+	req.Header.Set("Overwrite", "T")
+
+	// Send the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	CheckErr(err)
+	defer resp.Body.Close()
+	CheckErr(err)
+
+	// Check for success
+	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
+		LogToFile(fmt.Sprintf("failed to upload, status: %s", resp.Status))
+	}
+}
+
 func ConnectToSQLite() (*gorm.DB, error) {
 	scope := gap.NewScope(gap.User, "nug")
 	dirs, err := scope.DataDirs()
-	appPath := dirs[0] + "/nugDev.db"
+	appPath := dirs[0] + "/nug.db"
 	CheckErr(err)
 	dirPath := dirs[0]
 
@@ -131,4 +168,11 @@ func NormalizeDate(date string) string {
 	year := parts[2]                   // Keep year as a string
 
 	return fmt.Sprintf("%d.%d.%s", day, month, year)
+}
+
+func ShortenString(str string, length int) string {
+	if len(str) > length {
+		return str[:15]
+	}
+	return str
 }

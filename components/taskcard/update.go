@@ -23,7 +23,7 @@ func (m TaskCardModel) UpdateTaskCard(msg tea.Msg) (TaskCardModel, tea.Cmd) {
 				db.Model(&structs.Task{}).
 					Where("id = ?", m.Task.Id).
 					Update(m.current.Question, helpers.NormalizeDate(m.current.InputField.Value())).
-					Update("Updatedtime", time.Now())
+					Update("updated_at", time.Now())
 
 				m.Editing = false
 				m.Exiting = true

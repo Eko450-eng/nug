@@ -1,7 +1,6 @@
 package createtask
 
 import (
-	"fmt"
 	"nug/helpers"
 	"nug/structs"
 
@@ -39,9 +38,7 @@ func (m CreateModel) UpdateCreateElement(msg tea.Msg) (CreateModel, tea.Cmd) {
 				m.EditLine = 0
 				db, _ := helpers.ConnectToSQLite()
 
-				helpers.LogToFile(fmt.Sprintf("NotNormalized: %s", m.Newtask.Date))
 				m.Newtask.Date = helpers.NormalizeDate(m.Newtask.Date)
-				helpers.LogToFile(fmt.Sprintf("Normalized: %s", m.Newtask.Date))
 
 				db.Create(&m.Newtask)
 				m.Newtask = helpers.Resettask()

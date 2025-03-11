@@ -1,6 +1,7 @@
 package taskoverview
 
 import (
+	"fmt"
 	"nug/components/createtask"
 	"nug/components/taskcard"
 	"nug/helpers"
@@ -37,14 +38,14 @@ func (m Model) UpdateTasks() []structs.Task {
 	if m.show_deleted {
 		if res := db.
 			Find(&tasks); res.Error != nil {
-			panic(res.Error)
+			helpers.LogToFile(fmt.Sprintf("%e", res.Error))
 		}
 		return tasks
 	} else {
 		if res := db.
 			Where("deleted = ?", 0).
 			Find(&tasks); res.Error != nil {
-			panic(res.Error)
+			helpers.LogToFile(fmt.Sprintf("%e", res.Error))
 		}
 		return tasks
 	}
