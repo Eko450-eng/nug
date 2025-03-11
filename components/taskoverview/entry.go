@@ -1,6 +1,7 @@
 package taskoverview
 
 import (
+	"fmt"
 	"nug/components/createtask"
 	"nug/components/taskcard"
 	"nug/helpers"
@@ -37,22 +38,27 @@ func (m Model) UpdateTasks() []structs.Task {
 	if m.show_deleted {
 		if res := db.
 			Find(&tasks); res.Error != nil {
-			panic(res.Error)
+			helpers.LogToFile(fmt.Sprintf("%e", res.Error))
 		}
 		return tasks
 	} else {
 		if res := db.
 			Where("deleted = ?", 0).
 			Find(&tasks); res.Error != nil {
-			panic(res.Error)
+			helpers.LogToFile(fmt.Sprintf("%e", res.Error))
 		}
 		return tasks
 	}
 }
 
 func InitModel() Model {
+	var taskCard taskcard.TaskCardModel
 
 	tasks := helpers.UpdateTasks()
+
+	if len(tasks) > 0 {
+		taskCard = taskcard.InitModel(tasks[0], false)
+	}
 
 	return Model{
 		selected:     make(map[int]struct{}),
@@ -60,7 +66,7 @@ func InitModel() Model {
 		styles:       *structs.DefaultStyles(),
 		show_deleted: false,
 		state:        mainState,
-		taskcard:     taskcard.InitModel(tasks[0], false),
+		taskcard:     taskCard,
 		createmodel:  createtask.CreateModel{},
 	}
 }

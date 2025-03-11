@@ -94,13 +94,23 @@ type keymap struct {
 	Quit        key.Binding
 	Help        key.Binding
 	TabSwitch   key.Binding
+	Filter      key.Binding
+	Sync        key.Binding
 }
 
 // Keymap reusable key mappings shared across models
 var Keymap = keymap{
+	Sync: key.NewBinding(
+		key.WithKeys("u"),
+		key.WithHelp("u", "Sync to WebDav"),
+	),
+	Filter: key.NewBinding(
+		key.WithKeys("f"),
+		key.WithHelp("f", "Filter"),
+	),
 	TabSwitch: key.NewBinding(
 		key.WithKeys("tab"),
-		key.WithHelp("Tab", "Switch focus"),
+		key.WithHelp("Tab", "Switch to Calendar and back"),
 	),
 	Help: key.NewBinding(
 		key.WithKeys("?"),

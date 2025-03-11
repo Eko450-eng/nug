@@ -38,7 +38,7 @@ func getTasks() []structs.Task {
 }
 
 func displayHeader(width int) string {
-	res := fmt.Sprintf("%s", time.Now().Month().String())
+	res := ""
 
 	borderStyle := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
@@ -168,7 +168,7 @@ func (m Model) displayWeekLine(width int) string {
 }
 
 func (m Model) View(width, height int) string {
-	right := ""
+	taskView := ""
 
 	if m.width == 0 {
 		m.width = width
@@ -182,32 +182,41 @@ func (m Model) View(width, height int) string {
 		Width(m.width).
 		Align(lipgloss.Center)
 
-	for ind, task := range getTasks() {
+	for _, task := range getTasks() {
 
 		year := time.Now().Year()
 		month := time.Now().Month()
 
 		selected_date := time.Date(year, month, m.Selected+1, 0, 0, 0, 0, time.UTC)
 
+		taskElementStyle := lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("9")).
+			Width(width/2 - 2).
+			Align(lipgloss.Center)
+
 		if task.Date == selected_date.Format("2.1.2006") {
-			right += fmt.Sprintf("%d: %s - %s \n", ind, task.Name, task.Date)
+			// taskView += fmt.Sprintf("%d: %s - %s \n", ind, task.Name, task.Date)
+			taskView += taskElementStyle.Render(task.Name)
+
 		}
 	}
 
-	left := lipgloss.JoinVertical(
+	calendarView := lipgloss.JoinVertical(
 		lipgloss.Top,
-		displayHeader(m.width/4),
-		m.displayWeekLine(m.width/4),
+		displayHeader(m.width/5),
+		m.displayWeekLine(m.width/5),
 	)
 
 	res := lipgloss.JoinHorizontal(
 		lipgloss.Center,
-		left,
+		calendarView,
 		borderStyle.
-			Width(m.width/4).
+			BorderBackground(lipgloss.Color("9")).
+			Width(m.width/2).
 			Height(m.height-(m.height/3)).
 			MarginTop((m.height/3)/2).
-			Render(right),
+			Render(taskView),
 	)
 
 	return res

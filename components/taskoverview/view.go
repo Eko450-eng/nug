@@ -2,6 +2,7 @@ package taskoverview
 
 import (
 	"fmt"
+	"nug/helpers"
 
 	"github.com/charmbracelet/lipgloss"
 )
@@ -31,23 +32,42 @@ func (m Model) View(width, height int) string {
 	borderStyleActive := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(m.styles.BorderColorActive)
+	tasksBox := []string{}
 
 	for i, task := range m.Tasks {
-		cursor := " "
-		if m.Cursor == i {
-			cursor = ">"
+
+		checked := lipgloss.NewStyle().
+			Background(lipgloss.Color("#e9c46a")).
+			Foreground(lipgloss.Color("#000000"))
+
+		if m.Tasks[i].Completed == 1 {
+			checked = checked.
+				Background(lipgloss.Color("#a7c957")).
+				Foreground(lipgloss.Color("#000000"))
 		}
 
-		checked := " "
-		if m.Tasks[i].Completed == 1 {
-			checked = "x"
+		cursor := "  "
+		if m.Cursor == i {
+			checked = checked.Bold(true)
+			cursor = "> "
 		}
+
 		if m.Tasks[i].Deleted == 1 {
-			tasks += fmt.Sprintf("%s D-[%s] %s\n", cursor, checked, task.Name)
-		} else {
-			tasks += fmt.Sprintf("%s [%s] %s\n", cursor, checked, task.Name)
+			checked = checked.
+				Background(lipgloss.Color("#780000")).
+				Foreground(lipgloss.Color("#ffffff"))
 		}
+
+		taskText := fmt.Sprintf("%s%s", cursor, helpers.ShortenString(task.Name, 25))
+		tasksBox = append(tasksBox, lipgloss.JoinHorizontal(
+			lipgloss.Top,
+			checked.Render(taskText),
+		))
 	}
+	tasks = lipgloss.JoinVertical(
+		lipgloss.Top,
+		tasksBox...,
+	)
 
 	width = width - 10
 	height = height - 2

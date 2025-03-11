@@ -31,6 +31,8 @@ func Init() Model {
 		{structs.Keymap.SkipForm.Help().Key, structs.Keymap.SkipForm.Help().Desc},
 		{structs.Keymap.Back.Help().Key, structs.Keymap.Back.Help().Desc},
 		{structs.Keymap.Quit.Help().Key, structs.Keymap.Quit.Help().Desc},
+		{structs.Keymap.TabSwitch.Help().Key, structs.Keymap.TabSwitch.Help().Desc},
+		{structs.Keymap.Sync.Help().Key, structs.Keymap.Sync.Help().Desc},
 	}
 
 	t := table.New(
@@ -50,4 +52,3 @@ func Init() Model {
 		Table: t,
 	}
 }
-
