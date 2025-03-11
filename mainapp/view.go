@@ -6,10 +6,6 @@ import (
 
 func (m model) View() string {
 	s := ""
-	if len(m.taskoverview.Tasks) <= 0 {
-		s += "Coffee for all...."
-	}
-
 	switch m.state {
 	case mainState:
 		s += m.taskoverview.View(m.width, m.height)

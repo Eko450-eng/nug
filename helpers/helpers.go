@@ -17,7 +17,7 @@ import (
 func ConnectToSQLite() (*gorm.DB, error) {
 	scope := gap.NewScope(gap.User, "nug")
 	dirs, err := scope.DataDirs()
-	appPath := dirs[0] + "/nug.db"
+	appPath := dirs[0] + "/nugDev.db"
 	CheckErr(err)
 	dirPath := dirs[0]
 

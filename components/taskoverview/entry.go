@@ -51,8 +51,13 @@ func (m Model) UpdateTasks() []structs.Task {
 }
 
 func InitModel() Model {
+	var taskCard taskcard.TaskCardModel
 
 	tasks := helpers.UpdateTasks()
+
+	if len(tasks) > 0 {
+		taskCard = taskcard.InitModel(tasks[0], false)
+	}
 
 	return Model{
 		selected:     make(map[int]struct{}),
@@ -60,7 +65,7 @@ func InitModel() Model {
 		styles:       *structs.DefaultStyles(),
 		show_deleted: false,
 		state:        mainState,
-		taskcard:     taskcard.InitModel(tasks[0], false),
+		taskcard:     taskCard,
 		createmodel:  createtask.CreateModel{},
 	}
 }
