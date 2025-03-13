@@ -79,27 +79,32 @@ type Questions struct {
 }
 
 type keymap struct {
-	Up          key.Binding
-	Down        key.Binding
-	Left        key.Binding
-	Right       key.Binding
-	Save        key.Binding
-	Create      key.Binding
-	Edit        key.Binding
-	Check       key.Binding
-	ShowDeleted key.Binding
-	Delete      key.Binding
-	SkipForm    key.Binding
-	Back        key.Binding
-	Quit        key.Binding
-	Help        key.Binding
-	TabSwitch   key.Binding
-	Filter      key.Binding
-	Sync        key.Binding
+	Up            key.Binding
+	Down          key.Binding
+	Left          key.Binding
+	Right         key.Binding
+	Save          key.Binding
+	Create        key.Binding
+	Edit          key.Binding
+	Check         key.Binding
+	ShowDeleted   key.Binding
+	Delete        key.Binding
+	SkipForm      key.Binding
+	Back          key.Binding
+	Quit          key.Binding
+	Help          key.Binding
+	TabSwitch     key.Binding
+	Filter        key.Binding
+	Sync          key.Binding
+	HideCompleted key.Binding
 }
 
 // Keymap reusable key mappings shared across models
 var Keymap = keymap{
+	HideCompleted: key.NewBinding(
+		key.WithKeys("m"),
+		key.WithHelp("m", "Hide or show Completed"),
+	),
 	Sync: key.NewBinding(
 		key.WithKeys("u"),
 		key.WithHelp("u", "Sync to WebDav"),

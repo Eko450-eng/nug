@@ -14,7 +14,22 @@ func (m Model) UpdateMain(msg tea.Msg) (Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if key.Matches(msg, structs.Keymap.Up) && m.Cursor > 0 {
+		if key.Matches(msg, structs.Keymap.HideCompleted) {
+			m.hideCompleted = !m.hideCompleted
+			m.Tasks = m.UpdateTasks()
+		} else if key.Matches(msg, structs.Keymap.Filter) {
+			switch m.filter {
+			case prioAsc:
+				m.filter = prioDesc
+				m.Tasks = m.UpdateTasks()
+			case prioDesc:
+				m.filter = none
+				m.Tasks = m.UpdateTasks()
+			case none:
+				m.filter = prioAsc
+				m.Tasks = m.UpdateTasks()
+			}
+		} else if key.Matches(msg, structs.Keymap.Up) && m.Cursor > 0 {
 			m.Cursor--
 			m.taskcard.Task = m.Tasks[m.Cursor]
 		} else if key.Matches(msg, structs.Keymap.Down) && m.Cursor < len(m.Tasks)-1 {

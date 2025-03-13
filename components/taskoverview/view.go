@@ -3,6 +3,7 @@ package taskoverview
 import (
 	"fmt"
 	"nug/helpers"
+	"strconv"
 
 	"github.com/charmbracelet/lipgloss"
 )
@@ -33,6 +34,12 @@ func (m Model) View(width, height int) string {
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(m.styles.BorderColorActive)
 	tasksBox := []string{}
+	tasksBox = append(tasksBox, lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		"Prio",
+		"  ",
+		"Task",
+	))
 
 	for i, task := range m.Tasks {
 
@@ -58,9 +65,11 @@ func (m Model) View(width, height int) string {
 				Foreground(lipgloss.Color("#ffffff"))
 		}
 
-		taskText := fmt.Sprintf("%s%s", cursor, helpers.ShortenString(task.Name, 50))
+		taskText := fmt.Sprintf("%s%s", cursor, helpers.ShortenString(task.Name, 30))
 		tasksBox = append(tasksBox, lipgloss.JoinHorizontal(
 			lipgloss.Top,
+			strconv.Itoa(task.Prio),
+			"  ",
 			checked.Render(taskText),
 		))
 	}
