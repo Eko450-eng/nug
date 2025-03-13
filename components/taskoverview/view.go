@@ -58,7 +58,7 @@ func (m Model) View(width, height int) string {
 				Foreground(lipgloss.Color("#ffffff"))
 		}
 
-		taskText := fmt.Sprintf("%s%s", cursor, helpers.ShortenString(task.Name, 25))
+		taskText := fmt.Sprintf("%s%s", cursor, helpers.ShortenString(task.Name, 50))
 		tasksBox = append(tasksBox, lipgloss.JoinHorizontal(
 			lipgloss.Top,
 			checked.Render(taskText),
