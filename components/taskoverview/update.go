@@ -86,15 +86,6 @@ func (m Model) UpdateTask(msg tea.Msg) (taskcard.TaskCardModel, tea.Cmd) {
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	var cmd tea.Cmd
 
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		if key.Matches(msg, structs.Keymap.Sync) {
-			helpers.SyncToWebDav()
-		} else if key.Matches(msg, key.NewBinding(key.WithKeys("r"))) {
-			m.Tasks = m.UpdateTasks()
-		}
-	}
-
 	switch m.state {
 	case createState:
 		newState, newCmd := m.createmodel.UpdateCreateElement(msg)
@@ -141,6 +132,15 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 
 		cmd = newCmd
+	}
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		if key.Matches(msg, structs.Keymap.Sync) {
+			helpers.SyncToWebDav()
+		} else if key.Matches(msg, key.NewBinding(key.WithKeys("r"))) {
+			m.Tasks = m.UpdateTasks()
+		}
 	}
 
 	return m, cmd
