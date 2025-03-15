@@ -37,9 +37,9 @@ func InitTaskCreation() CreateModel {
 					Key("prio").
 					Title("Priority").
 					Options(
-						huh.NewOption("1", 0),
-						huh.NewOption("2", 1),
-						huh.NewOption("3", 2),
+						huh.NewOption("1", 1),
+						huh.NewOption("2", 2),
+						huh.NewOption("3", 3),
 					),
 				huh.NewSelect[int]().
 					Key("project").
