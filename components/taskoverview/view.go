@@ -45,6 +45,8 @@ func (m Model) View(width, height int) string {
 		lipgloss.Top,
 		"Prio",
 		"  ",
+		"Project",
+		" - ",
 		"Task",
 	))
 
@@ -72,7 +74,7 @@ func (m Model) View(width, height int) string {
 				Foreground(lipgloss.Color("#ffffff"))
 		}
 
-		taskText := fmt.Sprintf("%s%s", cursor, helpers.ShortenString(task.Name, 30))
+		taskText := fmt.Sprintf("%s%s - %s", cursor, helpers.GetProjectName(task.Project_id), helpers.ShortenString(task.Name, 30))
 		tasksBox = append(tasksBox, lipgloss.JoinHorizontal(
 			lipgloss.Top,
 			strconv.Itoa(task.Prio),
@@ -94,6 +96,14 @@ func (m Model) View(width, height int) string {
 	res := ""
 
 	switch m.state {
+	case settingState:
+		res += lipgloss.Place(
+			width,
+			height,
+			lipgloss.Left,
+			lipgloss.Top,
+			m.settings.View(),
+		)
 	case calendarState:
 		res += lipgloss.Place(
 			width,

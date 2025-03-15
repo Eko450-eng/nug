@@ -41,3 +41,9 @@ type Task_to_Project struct {
 	Task    int
 	Project int
 }
+
+type Settings struct {
+	gorm.Model
+	HideCompleted int
+	Ordering      int
+}

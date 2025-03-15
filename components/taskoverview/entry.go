@@ -5,6 +5,7 @@ import (
 	"nug/components/calendar"
 	"nug/components/createproject"
 	"nug/components/createtask"
+	"nug/components/settings"
 	"nug/components/taskcard"
 	"nug/helpers"
 	"nug/structs"
@@ -20,12 +21,13 @@ const (
 	createState
 	createProjectState
 	calendarState
+	settingState
 )
 
-type filterState int
+type orderState int
 
 const (
-	prioAsc filterState = iota
+	prioAsc orderState = iota
 	prioDesc
 	none
 )
@@ -39,13 +41,16 @@ type Model struct {
 	state         sessionState
 	taskcard      taskcard.TaskCardModel
 	createmodel   createtask.CreateModel
-	filter        filterState
+	ordering      orderState
 	hideCompleted bool
 	createProject createproject.Model
 	calendar      calendar.Model
+	settings      settings.Model
 
 	Width  int
 	Height int
+
+	loaded bool
 }
 
 func (m Model) UpdateTasks() []structs.Task {
@@ -55,7 +60,7 @@ func (m Model) UpdateTasks() []structs.Task {
 	filtering := ""
 	whereClause := ""
 
-	switch m.filter {
+	switch m.ordering {
 	case prioAsc:
 		filtering = "prio ASC"
 	case prioDesc:
@@ -86,22 +91,35 @@ func (m Model) UpdateTasks() []structs.Task {
 func InitModel() Model {
 	var taskCard taskcard.TaskCardModel
 
-	tasks := helpers.UpdateTasks()
+	preSetSettings := helpers.GetSettings()
+	ordering := preSetSettings.Ordering
+	hideCompleted := false
 
-	if len(tasks) > 0 {
-		taskCard = taskcard.InitModel(tasks[0], false)
+	if preSetSettings.HideCompleted == 1 {
+		hideCompleted = true
+		helpers.LogToFile("True")
 	}
 
-	return Model{
+	m := Model{
 		selected:      make(map[int]struct{}),
-		Tasks:         tasks,
 		styles:        *structs.DefaultStyles(),
 		show_deleted:  false,
 		state:         mainState,
 		taskcard:      taskCard,
 		createmodel:   createtask.CreateModel{},
 		createProject: createproject.InitModel(),
+		settings:      settings.InitModel(),
+		hideCompleted: hideCompleted,
+		ordering:      orderState(ordering),
 	}
+
+	m.Tasks = m.UpdateTasks()
+
+	if len(m.Tasks) > 0 {
+		taskCard = taskcard.InitModel(m.Tasks[0], false)
+	}
+
+	return m
 }
 
 func (m Model) Init() tea.Cmd {

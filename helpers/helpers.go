@@ -71,15 +71,26 @@ func Resettask() structs.Task {
 	}
 }
 
-func UpdateTasks() []structs.Task {
-	var tasks []structs.Task
+func GetProjectName(id int) string {
+	var projects structs.Project
 	db, _ := ConnectToSQLite()
 	if res := db.
-		Where("deleted = ?", 0).
-		Find(&tasks); res.Error != nil {
+		Where("id = ?", id).
+		Find(&projects); res.Error != nil {
 		panic(res.Error)
 	}
-	return tasks
+	return projects.Name
+}
+
+func GetSettings() structs.Settings {
+	var settings structs.Settings
+	db, _ := ConnectToSQLite()
+	if res := db.
+		Where("id = 1").
+		Find(&settings); res.Error != nil {
+		panic(res.Error)
+	}
+	return settings
 }
 
 func GetProjects() []structs.Project {

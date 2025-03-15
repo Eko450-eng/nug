@@ -22,15 +22,15 @@ func (m Model) UpdateMain(msg tea.Msg) (Model, tea.Cmd) {
 			m.Cursor = 0
 			m.Tasks = m.UpdateTasks()
 		} else if key.Matches(msg, structs.Keymap.Filter) {
-			switch m.filter {
+			switch m.ordering {
 			case prioAsc:
-				m.filter = prioDesc
+				m.ordering = prioDesc
 				m.Tasks = m.UpdateTasks()
 			case prioDesc:
-				m.filter = none
+				m.ordering = none
 				m.Tasks = m.UpdateTasks()
 			case none:
-				m.filter = prioAsc
+				m.ordering = prioAsc
 				m.Tasks = m.UpdateTasks()
 			}
 		} else if key.Matches(msg, structs.Keymap.Up) && m.Cursor > 0 {
@@ -127,13 +127,23 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m = newState
 		cmd = newCmd
 
+	case settingState:
+		newState, newCmd := m.settings.Update(msg)
+		m.settings = newState
+		cmd = newCmd
+
+		if newState.Finished {
+			m.state = mainState
+			m.Tasks = m.UpdateTasks()
+		}
+		return m, cmd
 	case createProjectState:
 		newState, newCmd := m.createProject.Update(msg)
 		m.createProject = newState
 		cmd = newCmd
 
 		if newState.Finished {
-			m.state = 0
+			m.state = mainState
 			m.Tasks = m.UpdateTasks()
 		}
 		return m, cmd
@@ -165,8 +175,18 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if key.Matches(msg, structs.Keymap.TabSwitch) {
+		if key.Matches(msg, structs.Keymap.Settings) {
 			switch m.state {
+			case settingState:
+				m.state = mainState
+			case mainState:
+				m.settings.Init()
+				m.state = settingState
+			}
+		} else if key.Matches(msg, structs.Keymap.TabSwitch) {
+			switch m.state {
+			case settingState:
+				m.state = mainState
 			case mainState:
 				m.calendar.Selected = time.Now().Day() - 1
 				m.calendar.HideCompleted = m.hideCompleted

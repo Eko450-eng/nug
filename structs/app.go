@@ -22,10 +22,15 @@ type keymap struct {
 	Filter        key.Binding
 	Sync          key.Binding
 	HideCompleted key.Binding
+	Settings      key.Binding
 }
 
 // Keymap reusable key mappings shared across models
 var Keymap = keymap{
+	Settings: key.NewBinding(
+		key.WithKeys("i"),
+		key.WithHelp("i", "Show settings"),
+	),
 	HideCompleted: key.NewBinding(
 		key.WithKeys("m"),
 		key.WithHelp("m", "Hide or show Completed"),

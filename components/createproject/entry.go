@@ -10,7 +10,7 @@ import (
 type Model struct {
 	project  structs.Project
 	Finished bool
-	form     *huh.Form // huh.Form is just a tea.Model
+	form     *huh.Form
 }
 
 func InitModel() Model {
