@@ -3,7 +3,6 @@ package mainapp
 import (
 	"nug/components/helpmodal"
 	"nug/structs"
-	"time"
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -28,10 +27,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		newState, newCmd := m.taskoverview.Update(msg)
 		m.taskoverview = newState
 		cmd = newCmd
-	case calendarState:
-		newState, newCmd := m.calendar.Update(msg)
-		m.calendar = newState
-		cmd = newCmd
 	}
 
 	switch msg := msg.(type) {
@@ -41,15 +36,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.taskoverview.Width = m.width
 		m.taskoverview.Height = m.height
 	case tea.KeyMsg:
-		if key.Matches(msg, structs.Keymap.TabSwitch) {
-			switch m.state {
-			case mainState:
-				m.calendar.Selected = time.Now().Day() - 1
-				m.state = calendarState
-			default:
-				m.state = mainState
-			}
-		} else if key.Matches(msg, structs.Keymap.Help) {
+		if key.Matches(msg, structs.Keymap.Help) {
 			m.helpmodal = helpmodal.Init()
 			m.state = helpState
 		} else if key.Matches(msg, structs.Keymap.Quit) {

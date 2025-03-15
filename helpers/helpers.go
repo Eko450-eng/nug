@@ -6,6 +6,7 @@ import (
 
 	"nug/structs"
 
+	"github.com/charmbracelet/huh"
 	"github.com/glebarez/sqlite"
 	gap "github.com/muesli/go-app-paths"
 	"gorm.io/gorm"
@@ -40,7 +41,6 @@ func ConnectToSQLite() (*gorm.DB, error) {
 	db.Find(&tasks)
 	if len(tasks) <= 0 {
 		NewTask := structs.Task{
-			Id:          0,
 			Name:        "Welcome",
 			Description: "You can delete this task now if you'd like :)",
 			Project_id:  0,
@@ -59,7 +59,6 @@ func ConnectToSQLite() (*gorm.DB, error) {
 
 func Resettask() structs.Task {
 	return structs.Task{
-		Id:          0,
 		Name:        "",
 		Description: "",
 		Project_id:  0,
@@ -81,6 +80,27 @@ func UpdateTasks() []structs.Task {
 		panic(res.Error)
 	}
 	return tasks
+}
+
+func GetProjects() []structs.Project {
+	var projects []structs.Project
+	db, _ := ConnectToSQLite()
+	if res := db.
+		Find(&projects); res.Error != nil {
+		panic(res.Error)
+	}
+	return projects
+}
+
+func GetProjectItems() []huh.Option[int] {
+	projects := GetProjects()
+	projectItems := []huh.Option[int]{}
+
+	for _, project := range projects {
+		projectItems = append(projectItems, huh.NewOption(project.Name, int(project.ID)))
+	}
+
+	return projectItems
 }
 
 func GetFilteredTask(prio, projectid int) []structs.Task {

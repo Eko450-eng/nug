@@ -8,10 +8,12 @@ import (
 )
 
 type Model struct {
-	Selected int
-	styles   structs.Styles
-	width    int
-	height   int
+	Selected      int
+	HideCompleted bool
+
+	styles structs.Styles
+	width  int
+	height int
 }
 
 func InitModel(width, height int) Model {

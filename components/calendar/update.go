@@ -20,8 +20,12 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m.height = msg.Height
 	case tea.KeyMsg:
 		if key.Matches(msg, structs.Keymap.Up) && m.Selected < DaysInMonth(time.Now().Year(), r) {
-			m.Selected++
+			m.Selected -= 7
 		} else if key.Matches(msg, structs.Keymap.Down) && m.Selected > 0 {
+			m.Selected += 7
+		} else if key.Matches(msg, structs.Keymap.Right) && m.Selected < DaysInMonth(time.Now().Year(), r) {
+			m.Selected++
+		} else if key.Matches(msg, structs.Keymap.Left) && m.Selected > 0 {
 			m.Selected--
 		}
 	}

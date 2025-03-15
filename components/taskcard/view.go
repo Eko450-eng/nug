@@ -25,8 +25,8 @@ func (m TaskCardModel) View(width int) string {
 		BorderForeground(borderColor).
 		Width(width)
 
-	if m.Editing {
-		return m.styles.InputField.Render(m.current.InputField.View())
+	if m.IsActive {
+		return m.Form.View()
 	} else {
 		return lipgloss.JoinVertical(
 			lipgloss.Top,

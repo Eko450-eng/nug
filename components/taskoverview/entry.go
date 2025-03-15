@@ -2,6 +2,8 @@ package taskoverview
 
 import (
 	"fmt"
+	"nug/components/calendar"
+	"nug/components/createproject"
 	"nug/components/createtask"
 	"nug/components/taskcard"
 	"nug/helpers"
@@ -16,6 +18,8 @@ const (
 	mainState sessionState = iota
 	infoState
 	createState
+	createProjectState
+	calendarState
 )
 
 type filterState int
@@ -37,6 +41,8 @@ type Model struct {
 	createmodel   createtask.CreateModel
 	filter        filterState
 	hideCompleted bool
+	createProject createproject.Model
+	calendar      calendar.Model
 
 	Width  int
 	Height int
@@ -75,21 +81,6 @@ func (m Model) UpdateTasks() []structs.Task {
 		helpers.LogToFile(fmt.Sprintf("%e", res.Error))
 	}
 	return tasks
-
-	// if m.show_deleted {
-	// 	if res := db.
-	// 		Find(&tasks); res.Error != nil {
-	// 		helpers.LogToFile(fmt.Sprintf("%e", res.Error))
-	// 	}
-	// 	return tasks
-	// } else {
-	// 	if res := db.
-	// 		Where("deleted = ?", 0).
-	// 		Find(&tasks); res.Error != nil {
-	// 		helpers.LogToFile(fmt.Sprintf("%e", res.Error))
-	// 	}
-	// 	return tasks
-	// }
 }
 
 func InitModel() Model {
@@ -102,13 +93,14 @@ func InitModel() Model {
 	}
 
 	return Model{
-		selected:     make(map[int]struct{}),
-		Tasks:        tasks,
-		styles:       *structs.DefaultStyles(),
-		show_deleted: false,
-		state:        mainState,
-		taskcard:     taskCard,
-		createmodel:  createtask.CreateModel{},
+		selected:      make(map[int]struct{}),
+		Tasks:         tasks,
+		styles:        *structs.DefaultStyles(),
+		show_deleted:  false,
+		state:         mainState,
+		taskcard:      taskCard,
+		createmodel:   createtask.CreateModel{},
+		createProject: createproject.InitModel(),
 	}
 }
 

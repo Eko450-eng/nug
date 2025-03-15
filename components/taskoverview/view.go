@@ -27,6 +27,13 @@ func (m Model) View(width, height int) string {
 		m.taskcard.Exiting = false
 	}
 
+	m.createProject.Init()
+
+	if m.createProject.Finished {
+		m.state = mainState
+		m.createProject.Finished = false
+	}
+
 	borderStyle := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(m.styles.BorderColor)
@@ -87,6 +94,14 @@ func (m Model) View(width, height int) string {
 	res := ""
 
 	switch m.state {
+	case calendarState:
+		res += lipgloss.Place(
+			width,
+			height,
+			lipgloss.Left,
+			lipgloss.Top,
+			m.calendar.View(width, height),
+		)
 	case mainState:
 		res += lipgloss.Place(
 			width,
@@ -103,6 +118,9 @@ func (m Model) View(width, height int) string {
 				),
 			),
 		)
+
+	case createProjectState:
+		res = m.createProject.View()
 
 	case infoState:
 		res += lipgloss.Place(
@@ -121,24 +139,26 @@ func (m Model) View(width, height int) string {
 			),
 		)
 	case createState:
-		if len(m.createmodel.Fields) == 0 {
-			return "No fields to display."
-		} else {
+		// if len(m.createmodel.Fields) == 0 {
+		// 	return "No fields to display."
+		// } else {
 
-			current := m.createmodel.Fields[m.createmodel.EditLine]
+		// current := m.createmodel.Fields[m.createmodel.EditLine]
 
-			res += lipgloss.Place(
-				width,
-				height,
+		m.createmodel.Init()
+
+		res += lipgloss.Place(
+			width,
+			height,
+			lipgloss.Center,
+			lipgloss.Center,
+			lipgloss.JoinVertical(
 				lipgloss.Center,
-				lipgloss.Center,
-				lipgloss.JoinVertical(
-					lipgloss.Center,
-					current.Question,
-					m.createmodel.View(),
-				),
-			)
-		}
+				// current.Question,
+				m.createmodel.View(),
+			),
+		)
+		// }
 	}
 
 	return res

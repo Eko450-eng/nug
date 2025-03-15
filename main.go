@@ -11,6 +11,7 @@ import (
 func main() {
 	db, err := helpers.ConnectToSQLite()
 	db.AutoMigrate(&structs.Task{})
+	db.AutoMigrate(&structs.Project{})
 	helpers.CheckErr(err)
 
 	f, err := tea.LogToFile("debug.log", "debug")

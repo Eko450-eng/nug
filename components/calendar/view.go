@@ -10,13 +10,18 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func dayHasTask(date string) []structs.Task {
+func dayHasTask(date string, hideCompleted bool) []structs.Task {
 	var tasks []structs.Task
 
 	db, _ := helpers.ConnectToSQLite()
 
+	whereClause := fmt.Sprintf("date = '%s'", helpers.NormalizeDate(date))
+	if hideCompleted {
+		whereClause += "AND completed = 0"
+	}
+
 	if res := db.
-		Where("date = ?", helpers.NormalizeDate(date)).
+		Where(whereClause).
 		Find(&tasks); res.Error != nil {
 		panic(res.Error)
 	}
@@ -24,12 +29,18 @@ func dayHasTask(date string) []structs.Task {
 	return tasks
 }
 
-func getTasks() []structs.Task {
+func getTasks(hideCompleted bool) []structs.Task {
 	var tasks []structs.Task
 
 	db, _ := helpers.ConnectToSQLite()
+	whereClause := ""
+
+	if hideCompleted {
+		whereClause = "completed = 0"
+	}
 
 	if res := db.
+		Where(whereClause).
 		Find(&tasks); res.Error != nil {
 		panic(res.Error)
 	}
@@ -139,7 +150,7 @@ func (m Model) displayWeekLine(width int) string {
 		year := strconv.Itoa(time.Now().Year())
 		month := time.Now().Month()
 
-		tasks := dayHasTask(fmt.Sprintf("%s.%s.%s", strconv.Itoa(i), strconv.Itoa(int(month)), year))
+		tasks := dayHasTask(fmt.Sprintf("%s.%s.%s", strconv.Itoa(i), strconv.Itoa(int(month)), year), m.HideCompleted)
 
 		if len(tasks) > 0 {
 			row += style.Foreground(lipgloss.Color("#c1121f")).Render(strconv.Itoa(i))
@@ -182,7 +193,7 @@ func (m Model) View(width, height int) string {
 		Width(m.width).
 		Align(lipgloss.Center)
 
-	for _, task := range getTasks() {
+	for _, task := range getTasks(m.HideCompleted) {
 
 		year := time.Now().Year()
 		month := time.Now().Month()

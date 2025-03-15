@@ -3,7 +3,6 @@ package mainapp
 import (
 	"os"
 
-	"nug/components/calendar"
 	"nug/components/helpmodal"
 	"nug/components/taskoverview"
 	"nug/helpers"
@@ -18,7 +17,6 @@ const (
 	mainState sessionState = iota
 	createState
 	helpState
-	calendarState
 )
 
 type model struct {
@@ -30,7 +28,6 @@ type model struct {
 
 	taskoverview taskoverview.Model
 	helpmodal    helpmodal.Model
-	calendar     calendar.Model
 }
 
 func InitModel() model {

@@ -5,6 +5,7 @@ import (
 	"nug/components/taskcard"
 	"nug/helpers"
 	"nug/structs"
+	"time"
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -14,8 +15,11 @@ func (m Model) UpdateMain(msg tea.Msg) (Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if key.Matches(msg, structs.Keymap.HideCompleted) {
+		if key.Matches(msg, structs.Keymap.CreateProject) {
+			m.state = createProjectState
+		} else if key.Matches(msg, structs.Keymap.HideCompleted) {
 			m.hideCompleted = !m.hideCompleted
+			m.Cursor = 0
 			m.Tasks = m.UpdateTasks()
 		} else if key.Matches(msg, structs.Keymap.Filter) {
 			switch m.filter {
@@ -44,13 +48,13 @@ func (m Model) UpdateMain(msg tea.Msg) (Model, tea.Cmd) {
 			currenttask := m.Tasks[m.Cursor]
 			if currenttask.Deleted == 1 {
 				db.Model(&structs.Task{}).
-					Where("id = ?", currenttask.Id).
+					Where("id = ?", currenttask.ID).
 					Update("Deleted", 0)
 				m.Tasks = m.UpdateTasks()
 				m.Cursor = 0
 			} else {
 				db.Model(&structs.Task{}).
-					Where("id = ?", currenttask.Id).
+					Where("id = ?", currenttask.ID).
 					Update("Deleted", 1)
 				m.Tasks = m.UpdateTasks()
 				if m.Cursor == 0 {
@@ -72,10 +76,12 @@ func (m Model) UpdateMain(msg tea.Msg) (Model, tea.Cmd) {
 				newvalue = 1
 			}
 			db.Model(&structs.Task{}).
-				Where("id = ?", currenttask.Id).
+				Where("id = ?", currenttask.ID).
 				Update("Completed", newvalue)
 			m.Tasks = m.UpdateTasks()
 		} else if key.Matches(msg, structs.Keymap.Edit) {
+			m.taskcard = taskcard.InitModel(m.Tasks[m.Cursor], false)
+			m.taskcard.Form.Init()
 			m.taskcard.IsActive = true
 			m.taskcard.Task = m.Tasks[m.Cursor]
 
@@ -102,6 +108,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch m.state {
+	case calendarState:
+		newState, newCmd := m.calendar.Update(msg)
+		m.calendar = newState
+		cmd = newCmd
 	case createState:
 		newState, newCmd := m.createmodel.UpdateCreateElement(msg)
 		cmd = newCmd
@@ -117,19 +127,22 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m = newState
 		cmd = newCmd
 
+	case createProjectState:
+		newState, newCmd := m.createProject.Update(msg)
+		m.createProject = newState
+		cmd = newCmd
+
+		if newState.Finished {
+			m.state = 0
+			m.Tasks = m.UpdateTasks()
+		}
+		return m, cmd
+
 	case infoState:
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
 			if key.Matches(msg, structs.Keymap.Quit) {
 				cmd = tea.Quit
-			} else if key.Matches(msg, structs.Keymap.Back) && !m.taskcard.Editing {
-				m.Tasks = m.UpdateTasks()
-				m.state = mainState
-
-				m.taskcard.Task = m.Tasks[m.Cursor]
-
-				m.taskcard.IsActive = false
-				m.taskcard.Exiting = false
 			}
 		}
 
@@ -147,11 +160,21 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 
 		cmd = newCmd
+		return m, cmd
 	}
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if key.Matches(msg, structs.Keymap.Sync) {
+		if key.Matches(msg, structs.Keymap.TabSwitch) {
+			switch m.state {
+			case mainState:
+				m.calendar.Selected = time.Now().Day() - 1
+				m.calendar.HideCompleted = m.hideCompleted
+				m.state = calendarState
+			case calendarState:
+				m.state = mainState
+			}
+		} else if key.Matches(msg, structs.Keymap.Sync) {
 			helpers.SyncToWebDav()
 		} else if key.Matches(msg, key.NewBinding(key.WithKeys("r"))) {
 			m.Tasks = m.UpdateTasks()
