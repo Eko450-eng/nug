@@ -8,12 +8,22 @@ import (
 	"time"
 
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 func (m Model) UpdateMain(msg tea.Msg) (Model, tea.Cmd) {
 	var cmd tea.Cmd
+
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		if m.initializing {
+			m.Viewport = viewport.New(100, msg.Height)
+			m.Viewport.YPosition = lipgloss.Height(m.taskElementView())
+			m.Viewport.SetContent(m.taskElementView())
+			m.initializing = false
+		}
 	case tea.KeyMsg:
 		if key.Matches(msg, structs.Keymap.CreateProject) {
 			m.state = createProjectState
@@ -21,28 +31,37 @@ func (m Model) UpdateMain(msg tea.Msg) (Model, tea.Cmd) {
 			m.hideCompleted = !m.hideCompleted
 			m.Cursor = 0
 			m.Tasks = m.UpdateTasks()
+			m.Viewport.SetContent(m.taskElementView())
 		} else if key.Matches(msg, structs.Keymap.Filter) {
 			switch m.ordering {
 			case prioAsc:
 				m.ordering = prioDesc
 				m.Tasks = m.UpdateTasks()
+				m.Viewport.SetContent(m.taskElementView())
 			case prioDesc:
 				m.ordering = none
 				m.Tasks = m.UpdateTasks()
+				m.Viewport.SetContent(m.taskElementView())
 			case none:
 				m.ordering = prioAsc
 				m.Tasks = m.UpdateTasks()
+				m.Viewport.SetContent(m.taskElementView())
 			}
 		} else if key.Matches(msg, structs.Keymap.Up) && m.Cursor > 0 {
 			m.Cursor--
+			m.Viewport.LineUp(1)
+			m.Viewport.SetContent(m.taskElementView())
 			m.taskcard.Task = m.Tasks[m.Cursor]
 		} else if key.Matches(msg, structs.Keymap.Down) && m.Cursor < len(m.Tasks)-1 {
 			m.Cursor++
+			m.Viewport.LineDown(1)
+			m.Viewport.SetContent(m.taskElementView())
 			m.taskcard.Task = m.Tasks[m.Cursor]
 		} else if key.Matches(msg, structs.Keymap.ShowDeleted) {
 			m.Cursor = 0
 			m.show_deleted = !m.show_deleted
 			m.Tasks = m.UpdateTasks()
+			m.Viewport.SetContent(m.taskElementView())
 		} else if key.Matches(msg, structs.Keymap.Delete) {
 			db, _ := helpers.ConnectToSQLite()
 			currenttask := m.Tasks[m.Cursor]
@@ -51,12 +70,14 @@ func (m Model) UpdateMain(msg tea.Msg) (Model, tea.Cmd) {
 					Where("id = ?", currenttask.ID).
 					Update("Deleted", 0)
 				m.Tasks = m.UpdateTasks()
+				m.Viewport.SetContent(m.taskElementView())
 				m.Cursor = 0
 			} else {
 				db.Model(&structs.Task{}).
 					Where("id = ?", currenttask.ID).
 					Update("Deleted", 1)
 				m.Tasks = m.UpdateTasks()
+				m.Viewport.SetContent(m.taskElementView())
 				if m.Cursor == 0 {
 					m.Cursor = 0
 				} else {
@@ -79,6 +100,7 @@ func (m Model) UpdateMain(msg tea.Msg) (Model, tea.Cmd) {
 				Where("id = ?", currenttask.ID).
 				Update("Completed", newvalue)
 			m.Tasks = m.UpdateTasks()
+			m.Viewport.SetContent(m.taskElementView())
 		} else if key.Matches(msg, structs.Keymap.Edit) {
 			m.taskcard = taskcard.InitModel(m.Tasks[m.Cursor], false)
 			m.taskcard.Form.Init()
