@@ -10,6 +10,7 @@ import (
 	"nug/helpers"
 	"nug/structs"
 
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -46,6 +47,9 @@ type Model struct {
 	createProject createproject.Model
 	calendar      calendar.Model
 	settings      settings.Model
+	initializing  bool
+
+	Viewport viewport.Model
 
 	Width  int
 	Height int
@@ -57,6 +61,7 @@ func (m Model) UpdateTasks() []structs.Task {
 	var tasks []structs.Task
 	db, _ := helpers.ConnectToSQLite()
 
+	filteringDef := "project_id"
 	filtering := ""
 	whereClause := ""
 
@@ -81,6 +86,7 @@ func (m Model) UpdateTasks() []structs.Task {
 
 	if res := db.
 		Where(whereClause).
+		Order(filteringDef).
 		Order(filtering).
 		Find(&tasks); res.Error != nil {
 		helpers.LogToFile(fmt.Sprintf("%e", res.Error))
@@ -111,6 +117,7 @@ func InitModel() Model {
 		settings:      settings.InitModel(),
 		hideCompleted: hideCompleted,
 		ordering:      orderState(ordering),
+		initializing:  true,
 	}
 
 	m.Tasks = m.UpdateTasks()
