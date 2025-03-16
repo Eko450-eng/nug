@@ -15,39 +15,49 @@ func (m Model) taskElementView() string {
 		Background(lipgloss.Color("#a7c957")).
 		Foreground(lipgloss.Color("#000000"))
 
-	prio := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("9"))
-
 	taskText := "Prio - Task\n"
 
 	for _, project := range projects {
 		taskText += fmt.Sprintf("%s\n", borderStyle.Render(project.Name))
 
 		for i, task := range m.Tasks {
+			prio := lipgloss.NewStyle()
+			normalTask := lipgloss.NewStyle().
+				Foreground(lipgloss.Color("#ffffff"))
 			if task.Project_id == int(project.ID) {
-				checked := lipgloss.NewStyle().
-					Foreground(lipgloss.Color("#ffffff"))
-				if task.Completed == 1 {
-					checked.
-						Foreground(lipgloss.Color("9")).Strikethrough(true)
-				}
-
 				cursor := "  "
 				if m.Cursor == i {
 					cursor = "> "
 				}
 
-				if task.Deleted == 1 {
-					checked.
+				if task.Completed == 1 && task.Deleted == 1 {
+					normalTask = normalTask.
+						Foreground(lipgloss.Color("9")).
+						Strikethrough(true)
+				} else if task.Completed == 1 {
+					normalTask = normalTask.
+						Strikethrough(true)
+				} else if task.Deleted == 1 {
+					normalTask = normalTask.
 						Foreground(lipgloss.Color("9"))
 				}
 
-				taskText += fmt.Sprintf("%s\n",
-					checked.Render(cursor,
-						strconv.Itoa(task.Completed),
-						prio.Render(strconv.Itoa(task.Prio)),
+				switch task.Prio {
+				case 2:
+					prio = prio.Foreground(lipgloss.Color("#823038"))
+				case 3:
+					prio = prio.Foreground(lipgloss.Color("#96031A"))
+				default:
+					prio = prio.Foreground(lipgloss.Color("#B9E28C"))
+				}
+
+				taskText += fmt.Sprintf("%s%s %s\n",
+					cursor,
+					prio.Render(strconv.Itoa(task.Prio)),
+					normalTask.Render(
 						helpers.ShortenString(task.Name, 30),
 					))
+
 			}
 		}
 	}
