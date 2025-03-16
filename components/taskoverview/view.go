@@ -10,10 +10,8 @@ import (
 
 func (m Model) taskElementView() string {
 	projects := helpers.GetProjects()
-	checked := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#ffffff"))
 
-	borderStyle := checked.
+	borderStyle := lipgloss.NewStyle().
 		Background(lipgloss.Color("#a7c957")).
 		Foreground(lipgloss.Color("#000000"))
 
@@ -22,34 +20,31 @@ func (m Model) taskElementView() string {
 
 	taskText := "Prio - Task\n"
 
-	cursor := "  "
-
 	for _, project := range projects {
 		taskText += fmt.Sprintf("%s\n", borderStyle.Render(project.Name))
 
 		for i, task := range m.Tasks {
 			if task.Project_id == int(project.ID) {
+				checked := lipgloss.NewStyle().
+					Foreground(lipgloss.Color("#ffffff"))
 				if task.Completed == 1 {
-					checked = checked.
-						Foreground(lipgloss.Color("#9EADC8")).
-						Strikethrough(true)
+					checked.
+						Foreground(lipgloss.Color("9")).Strikethrough(true)
 				}
 
+				cursor := "  "
 				if m.Cursor == i {
-					checked = checked.Bold(true)
 					cursor = "> "
 				}
 
 				if task.Deleted == 1 {
-					checked = checked.
+					checked.
 						Foreground(lipgloss.Color("9"))
-					if task.Completed == 1 {
-						checked.Strikethrough(true)
-					}
 				}
 
 				taskText += fmt.Sprintf("%s\n",
 					checked.Render(cursor,
+						strconv.Itoa(task.Completed),
 						prio.Render(strconv.Itoa(task.Prio)),
 						helpers.ShortenString(task.Name, 30),
 					))
