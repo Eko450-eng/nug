@@ -18,7 +18,7 @@ const (
 
 type Model struct {
 	Finished bool
-	form     *huh.Form
+	Form     *huh.Form
 
 	settings structs.Settings
 }
@@ -34,7 +34,7 @@ func InitModel() Model {
 			Ordering:      settings.Ordering,
 		},
 
-		form: huh.NewForm(
+		Form: huh.NewForm(
 			huh.NewGroup(
 				huh.NewSelect[int]().
 					Key("hidecompleted").
@@ -59,5 +59,5 @@ func InitModel() Model {
 }
 
 func (m Model) Init() tea.Cmd {
-	return m.form.Init()
+	return m.Form.Init()
 }

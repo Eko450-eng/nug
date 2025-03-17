@@ -1,14 +1,18 @@
 package mainapp
 
+import "github.com/charmbracelet/lipgloss"
+
+var mainStyle = lipgloss.NewStyle()
+
 func (m model) View() string {
 	s := ""
 
 	switch m.state {
 	case mainState:
-		s += m.taskoverview.View(m.width, m.height)
+		s = mainStyle.Render(m.taskoverview.View(m.width, m.height))
 
 	case helpState:
-		s = m.helpmodal.View(m.width, m.height)
+		s = mainStyle.Render(m.helpmodal.View(m.width, m.height))
 	}
 
 	return s

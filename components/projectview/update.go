@@ -1,8 +1,9 @@
-package settings
+package projectview
 
 import (
 	"nug/helpers"
 	"nug/structs"
+	"strconv"
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -24,16 +25,20 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	if m.Form.State == huh.StateCompleted {
 		db, _ := helpers.ConnectToSQLite()
+		for _, project := range m.projects {
+			name := m.Form.GetString(strconv.Itoa(int(project.ID)))
+			var p structs.Project
+			p.ID = project.ID
+			p.Name = name
 
-		var settings structs.Settings
-		db.First(&settings)
+			if name == "" {
+				db.Delete(&p)
+			} else {
+				db.Save(&p)
+			}
 
-		settings.HideCompleted = m.Form.GetInt("hidecompleted")
-		settings.Ordering = m.Form.GetInt("ordering")
-
-		db.Save(&settings)
-
-		m.Finished = true
+			m.Finished = true
+		}
 	}
 
 	return m, cmd

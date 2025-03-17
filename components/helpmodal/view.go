@@ -5,8 +5,10 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+var mainStyle = lipgloss.NewStyle()
+
 func (m Model) View(width, height int) string {
-	borderStyle := lipgloss.NewStyle().
+	borderStyle := mainStyle.
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("36"))
 

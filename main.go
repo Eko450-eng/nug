@@ -11,6 +11,7 @@ import (
 func main() {
 	db, err := helpers.ConnectToSQLite()
 	db.AutoMigrate(&structs.Task{})
+	db.AutoMigrate(&structs.QuickNotes{})
 	db.AutoMigrate(&structs.Project{})
 	db.AutoMigrate(&structs.Settings{})
 	helpers.CheckErr(err)
@@ -19,7 +20,7 @@ func main() {
 	helpers.CheckErr(err)
 
 	defer f.Close()
-	p := tea.NewProgram(mainapp.InitModel())
+	p := tea.NewProgram(mainapp.InitModel(), tea.WithAltScreen())
 	_, err = p.Run()
 	helpers.CheckErr(err)
 }

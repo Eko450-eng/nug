@@ -10,14 +10,14 @@ import (
 type Model struct {
 	project  structs.Project
 	Finished bool
-	form     *huh.Form
+	Form     *huh.Form
 }
 
 func InitModel() Model {
 	return Model{
 		Finished: false,
 		project:  structs.Project{},
-		form: huh.NewForm(
+		Form: huh.NewForm(
 			huh.NewGroup(
 				huh.NewInput().
 					Key("name").
@@ -28,5 +28,5 @@ func InitModel() Model {
 }
 
 func (m Model) Init() tea.Cmd {
-	return m.form.Init()
+	return m.Form.Init()
 }

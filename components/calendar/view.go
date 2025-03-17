@@ -10,6 +10,8 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+var mainStyle = lipgloss.NewStyle()
+
 func dayHasTask(date string, hideCompleted bool) []structs.Task {
 	var tasks []structs.Task
 
@@ -51,7 +53,7 @@ func getTasks(hideCompleted bool) []structs.Task {
 func displayHeader(width int) string {
 	res := ""
 
-	borderStyle := lipgloss.NewStyle().
+	borderStyle := mainStyle.
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("9")).
 		MarginTop(1).
@@ -77,7 +79,7 @@ func displayHeader(width int) string {
 func (m Model) displayWeekLine(width int) string {
 	res := ""
 
-	borderStyle := lipgloss.NewStyle().
+	borderStyle := mainStyle.
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("9")).
 		MarginTop(1).
@@ -186,7 +188,7 @@ func (m Model) View(width, height int) string {
 		m.height = height
 	}
 
-	borderStyle := lipgloss.NewStyle().
+	borderStyle := mainStyle.
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("9")).
 		MarginTop(1).
@@ -200,7 +202,7 @@ func (m Model) View(width, height int) string {
 
 		selected_date := time.Date(year, month, m.Selected+1, 0, 0, 0, 0, time.UTC)
 
-		taskElementStyle := lipgloss.NewStyle().
+		taskElementStyle := mainStyle.
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("9")).
 			Width(width/2 - 2).

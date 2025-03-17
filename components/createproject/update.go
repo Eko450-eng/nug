@@ -4,21 +4,29 @@ import (
 	"nug/helpers"
 	"nug/structs"
 
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 )
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
-	form, cmd := m.form.Update(msg)
-	if f, ok := form.(*huh.Form); ok {
-		m.form = f
+	if msg, ok := msg.(tea.KeyMsg); ok {
+		if key.Matches(msg, structs.Keymap.QuitEasy) {
+			m.Finished = true
+			return m, nil
+		}
 	}
 
-	if m.form.State == huh.StateCompleted {
+	form, cmd := m.Form.Update(msg)
+	if f, ok := form.(*huh.Form); ok {
+		m.Form = f
+	}
+
+	if m.Form.State == huh.StateCompleted {
 		db, _ := helpers.ConnectToSQLite()
 
 		m.project = structs.Project{
-			Name:    m.form.GetString("name"),
+			Name:    m.Form.GetString("name"),
 			Deleted: 0,
 		}
 
@@ -26,6 +34,5 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 		m.Finished = true
 	}
-
 	return m, cmd
 }

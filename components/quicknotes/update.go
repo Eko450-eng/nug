@@ -1,4 +1,4 @@
-package settings
+package quicknotes
 
 import (
 	"nug/helpers"
@@ -25,13 +25,14 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	if m.Form.State == huh.StateCompleted {
 		db, _ := helpers.ConnectToSQLite()
 
-		var settings structs.Settings
-		db.First(&settings)
+		note := m.Form.GetString("note")
 
-		settings.HideCompleted = m.Form.GetInt("hidecompleted")
-		settings.Ordering = m.Form.GetInt("ordering")
+		m.Note = structs.QuickNotes{
+			Note:    note,
+			Deleted: 0,
+		}
 
-		db.Save(&settings)
+		db.Create(&m.Note)
 
 		m.Finished = true
 	}

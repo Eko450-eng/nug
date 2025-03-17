@@ -17,6 +17,7 @@ type keymap struct {
 	SkipForm      key.Binding
 	Back          key.Binding
 	Quit          key.Binding
+	QuitEasy      key.Binding
 	Help          key.Binding
 	TabSwitch     key.Binding
 	Filter        key.Binding
@@ -104,7 +105,11 @@ var Keymap = keymap{
 		key.WithHelp("ctrl+p", "QuickSave"),
 	),
 	Quit: key.NewBinding(
+		key.WithKeys("ctrl+q"),
+		key.WithHelp("ctrl+q", "quit"),
+	),
+	QuitEasy: key.NewBinding(
 		key.WithKeys("ctrl+c"),
-		key.WithHelp("ctrl+c", "quit"),
+		key.WithHelp("ctrl+c", "quitEasy"),
 	),
 }

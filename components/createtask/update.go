@@ -13,19 +13,19 @@ func (m CreateModel) UpdateCreateElement(msg tea.Msg) (CreateModel, tea.Cmd) {
 	var cmd tea.Cmd
 	// m.current = m.Fields[m.EditLine]
 
-	form, cmd := m.form.Update(msg)
+	form, cmd := m.Form.Update(msg)
 	if f, ok := form.(*huh.Form); ok {
-		m.form = f
+		m.Form = f
 	}
 
-	if m.form.State == huh.StateCompleted {
+	if m.Form.State == huh.StateCompleted {
 		db, _ := helpers.ConnectToSQLite()
 
 		m.Newtask = structs.Task{
-			Name:        m.form.GetString("name"),
-			Description: m.form.GetString("description"),
-			Prio:        m.form.GetInt("prio"),
-			Project_id:  m.form.GetInt("project"),
+			Name:        m.Form.GetString("name"),
+			Description: m.Form.GetString("description"),
+			Prio:        m.Form.GetInt("prio"),
+			Project_id:  m.Form.GetInt("project"),
 			Deleted:     0,
 		}
 
@@ -38,6 +38,9 @@ func (m CreateModel) UpdateCreateElement(msg tea.Msg) (CreateModel, tea.Cmd) {
 	case tea.KeyMsg:
 		if key.Matches(msg, structs.Keymap.Quit) {
 			cmd = tea.Quit
+			return m, cmd
+		} else if key.Matches(msg, structs.Keymap.QuitEasy) {
+			m.Exiting = true
 			return m, cmd
 		}
 	}

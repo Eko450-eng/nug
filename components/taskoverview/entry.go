@@ -5,6 +5,8 @@ import (
 	"nug/components/calendar"
 	"nug/components/createproject"
 	"nug/components/createtask"
+	"nug/components/projectview"
+	"nug/components/quicknotes"
 	"nug/components/settings"
 	"nug/components/taskcard"
 	"nug/helpers"
@@ -23,6 +25,8 @@ const (
 	createProjectState
 	calendarState
 	settingState
+	projectViewState
+	quickNoteState
 )
 
 type orderState int
@@ -45,6 +49,8 @@ type Model struct {
 	ordering      orderState
 	hideCompleted bool
 	createProject createproject.Model
+	projectView   projectview.Model
+	quickNote     quicknotes.Model
 	calendar      calendar.Model
 	settings      settings.Model
 	initializing  bool
@@ -114,6 +120,8 @@ func InitModel() Model {
 		taskcard:      taskCard,
 		createmodel:   createtask.CreateModel{},
 		createProject: createproject.InitModel(),
+		projectView:   projectview.InitModel(),
+		quickNote:     quicknotes.InitModel(),
 		settings:      settings.InitModel(),
 		hideCompleted: hideCompleted,
 		ordering:      orderState(ordering),

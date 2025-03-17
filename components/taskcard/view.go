@@ -7,26 +7,30 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+var mainStyle = lipgloss.NewStyle()
+
 func selectedCursor(cursor, pos int, isActive bool) string {
 	c := ""
 	if cursor == pos && isActive {
 		c = ">"
 	}
-	return c
+	return mainStyle.Render(c)
 }
 
 func (m TaskCardModel) View(width int) string {
 	borderColor := m.styles.BorderColor
+
 	if m.Task.Deleted == 1 {
 		borderColor = lipgloss.Color("9")
 	}
-	borderStyle := lipgloss.NewStyle().
+
+	borderStyle := mainStyle.
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(borderColor).
 		Width(width)
 
 	if m.IsActive {
-		return m.Form.View()
+		return mainStyle.Render(m.Form.View())
 	} else {
 		return lipgloss.JoinVertical(
 			lipgloss.Top,

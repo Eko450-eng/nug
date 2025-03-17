@@ -1,7 +1,11 @@
 package taskoverview
 
 import (
+	"nug/components/createproject"
 	"nug/components/createtask"
+	"nug/components/projectview"
+	"nug/components/quicknotes"
+	"nug/components/settings"
 	"nug/components/taskcard"
 	"nug/helpers"
 	"nug/structs"
@@ -26,6 +30,8 @@ func (m Model) UpdateMain(msg tea.Msg) (Model, tea.Cmd) {
 		}
 	case tea.KeyMsg:
 		if key.Matches(msg, structs.Keymap.CreateProject) {
+			m.createProject = createproject.InitModel()
+			m.createProject.Form.Init()
 			m.state = createProjectState
 		} else if key.Matches(msg, structs.Keymap.HideCompleted) {
 			m.hideCompleted = !m.hideCompleted
@@ -111,6 +117,7 @@ func (m Model) UpdateMain(msg tea.Msg) (Model, tea.Cmd) {
 		} else if key.Matches(msg, structs.Keymap.Create) {
 			m.state = createState
 			m.createmodel = createtask.InitTaskCreation()
+			m.createmodel.Form.Init()
 		}
 	}
 	return m, cmd
@@ -130,6 +137,26 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch m.state {
+	case quickNoteState:
+		newState, newCmd := m.quickNote.Update(msg)
+		m.quickNote = newState
+		cmd = newCmd
+
+		if newState.Finished {
+			m.state = mainState
+			m.Tasks = m.UpdateTasks()
+		}
+		return m, cmd
+	case projectViewState:
+		newState, newCmd := m.projectView.Update(msg)
+		m.projectView = newState
+		cmd = newCmd
+
+		if newState.Finished {
+			m.state = mainState
+			m.Tasks = m.UpdateTasks()
+		}
+		return m, cmd
 	case calendarState:
 		newState, newCmd := m.calendar.Update(msg)
 		m.calendar = newState
@@ -169,7 +196,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.Tasks = m.UpdateTasks()
 		}
 		return m, cmd
-
 	case infoState:
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
@@ -197,24 +223,34 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if key.Matches(msg, structs.Keymap.Settings) {
+		if key.Matches(msg, key.NewBinding(key.WithKeys("E"))) {
 			switch m.state {
+			case mainState:
+				m.quickNote = quicknotes.InitModel()
+				m.quickNote.Form.Init()
+				m.state = quickNoteState
+			}
+		} else if key.Matches(msg, structs.Keymap.Settings) {
+			switch m.state {
+			case projectViewState:
+				m.state = mainState
 			case settingState:
 				m.state = mainState
 			case mainState:
-				m.settings.Init()
+				m.settings = settings.InitModel()
+				m.settings.Form.Init()
 				m.state = settingState
 			}
 		} else if key.Matches(msg, structs.Keymap.TabSwitch) {
 			switch m.state {
-			case settingState:
-				m.state = mainState
 			case mainState:
 				m.calendar.Selected = time.Now().Day() - 1
 				m.calendar.HideCompleted = m.hideCompleted
 				m.state = calendarState
 			case calendarState:
-				m.state = mainState
+				m.projectView = projectview.InitModel()
+				m.projectView.Form.Init()
+				m.state = projectViewState
 			}
 		} else if key.Matches(msg, structs.Keymap.Sync) {
 			helpers.SyncToWebDav()

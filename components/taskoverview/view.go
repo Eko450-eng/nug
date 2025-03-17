@@ -8,10 +8,12 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+var mainStyle = lipgloss.NewStyle()
+
 func (m Model) taskElementView() string {
 	projects := helpers.GetProjects()
 
-	borderStyle := lipgloss.NewStyle().
+	borderStyle := mainStyle.
 		Background(lipgloss.Color("#a7c957")).
 		Foreground(lipgloss.Color("#000000"))
 
@@ -21,8 +23,8 @@ func (m Model) taskElementView() string {
 		taskText += fmt.Sprintf("%s\n", borderStyle.Render(project.Name))
 
 		for i, task := range m.Tasks {
-			prio := lipgloss.NewStyle()
-			normalTask := lipgloss.NewStyle().
+			prio := mainStyle
+			normalTask := mainStyle.
 				Foreground(lipgloss.Color("#ffffff"))
 			if task.Project_id == int(project.ID) {
 				cursor := "  "
@@ -62,15 +64,15 @@ func (m Model) taskElementView() string {
 		}
 	}
 
-	return taskText
+	return mainStyle.Render(taskText)
 }
 
 func (m Model) View(width, height int) string {
-	borderStyle := lipgloss.NewStyle().
+	borderStyle := mainStyle.
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(m.styles.BorderColor)
 
-	borderStyleActive := lipgloss.NewStyle().
+	borderStyleActive := mainStyle.
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(m.styles.BorderColorActive)
 
@@ -90,8 +92,6 @@ func (m Model) View(width, height int) string {
 		m.taskcard.Exiting = false
 	}
 
-	m.createProject.Init()
-
 	if m.createProject.Finished {
 		m.state = mainState
 		m.createProject.Finished = false
@@ -107,69 +107,83 @@ func (m Model) View(width, height int) string {
 
 	switch m.state {
 	case settingState:
-		res += lipgloss.Place(
+		res = lipgloss.Place(
 			width,
 			height,
 			lipgloss.Left,
 			lipgloss.Top,
-			m.settings.View(),
+			mainStyle.Render(
+				m.settings.View(),
+			),
 		)
 	case calendarState:
-		res += lipgloss.Place(
+		res = lipgloss.Place(
 			width,
 			height,
 			lipgloss.Left,
 			lipgloss.Top,
-			m.calendar.View(width, height),
+			mainStyle.Render(
+				m.calendar.View(width, height),
+			),
 		)
 	case mainState:
-		res += lipgloss.Place(
+		res = lipgloss.Place(
 			width,
 			height,
 			lipgloss.Left,
 			lipgloss.Top,
-			lipgloss.JoinHorizontal(
-				lipgloss.Top,
-				m.Viewport.View(),
-				borderStyle.Width(rightWidth).Height(height).Render(
-					m.taskcard.View(rightWidth-30),
+			mainStyle.Render(
+				lipgloss.JoinHorizontal(
+					lipgloss.Top,
+					m.Viewport.View(),
+					borderStyle.Width(rightWidth).Height(height).Render(
+						m.taskcard.View(rightWidth-30),
+					),
 				),
 			),
 		)
 
+	case projectViewState:
+		res = mainStyle.Render(m.projectView.View())
 	case createProjectState:
-		res = m.createProject.View()
+		res = mainStyle.Render(m.createProject.View())
+	case quickNoteState:
+		res = mainStyle.Render(m.quickNote.View())
 
 	case infoState:
-		res += lipgloss.Place(
+		res = lipgloss.Place(
 			width,
 			height,
 			lipgloss.Left,
 			lipgloss.Top,
-			lipgloss.JoinHorizontal(
-				lipgloss.Top,
-				borderStyle.Width(leftWidth).Height(height).Render(
-					m.Viewport.View(),
-				),
-				borderStyleActive.Width(rightWidth).Height(height).Render(
-					m.taskcard.View(rightWidth-30),
+			mainStyle.Render(
+				lipgloss.JoinHorizontal(
+					lipgloss.Top,
+					borderStyle.Width(leftWidth).Height(height).Render(
+						m.Viewport.View(),
+					),
+					borderStyleActive.Width(rightWidth).Height(height).Render(
+						m.taskcard.View(rightWidth-30),
+					),
 				),
 			),
 		)
 	case createState:
 		m.createmodel.Init()
 
-		res += lipgloss.Place(
+		res = lipgloss.Place(
 			width,
 			height,
 			lipgloss.Center,
 			lipgloss.Center,
-			lipgloss.JoinVertical(
-				lipgloss.Center,
-				m.createmodel.View(),
+			mainStyle.Render(
+				lipgloss.JoinVertical(
+					lipgloss.Center,
+					m.createmodel.View(),
+				),
 			),
 		)
 	}
 
-	return res
+	return mainStyle.Render(res)
 }

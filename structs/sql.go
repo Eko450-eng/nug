@@ -47,3 +47,11 @@ type Settings struct {
 	HideCompleted int
 	Ordering      int
 }
+
+type QuickNotes struct {
+	gorm.Model
+	Note       string
+	TaskRef    int
+	ProjectRef int
+	Deleted    int
+}

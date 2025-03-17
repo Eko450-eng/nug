@@ -103,6 +103,19 @@ func GetProjects() []structs.Project {
 	return projects
 }
 
+func GetTaskCountOfProject(projectId uint) int {
+	var tasks []structs.Task
+	db, _ := ConnectToSQLite()
+
+	if res := db.
+		Where("project_id = ? AND deleted = 0 AND completed = 0", projectId).
+		Find(&tasks); res.Error != nil {
+		panic(res.Error)
+	}
+
+	return len(tasks)
+}
+
 func GetProjectItems() []huh.Option[int] {
 	projects := GetProjects()
 	projectItems := []huh.Option[int]{}

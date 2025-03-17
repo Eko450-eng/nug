@@ -14,7 +14,7 @@ type CreateModel struct {
 	Newtask  structs.Task
 	styles   structs.Styles
 	Exiting  bool
-	form     *huh.Form
+	Form     *huh.Form
 }
 
 func InitTaskCreation() CreateModel {
@@ -25,7 +25,7 @@ func InitTaskCreation() CreateModel {
 		Newtask:  structs.Task{},
 		styles:   *structs.DefaultStyles(),
 		Exiting:  false,
-		form: huh.NewForm(
+		Form: huh.NewForm(
 			huh.NewGroup(
 				huh.NewInput().
 					Key("name").
@@ -53,5 +53,5 @@ func InitTaskCreation() CreateModel {
 }
 
 func (m CreateModel) Init() tea.Cmd {
-	return m.form.Init()
+	return m.Form.Init()
 }
