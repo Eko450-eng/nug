@@ -24,10 +24,16 @@ type keymap struct {
 	Sync          key.Binding
 	HideCompleted key.Binding
 	Settings      key.Binding
+	QuickNotes    key.Binding
+	Top           key.Binding
+	Bottom        key.Binding
 }
 
 // Keymap reusable key mappings shared across models
 var Keymap = keymap{
+	QuickNotes: key.NewBinding(key.WithKeys("E"), key.WithHelp("Shift + E", "Add Quicknote")),
+	Top:        key.NewBinding(key.WithKeys("g"), key.WithHelp("g", "Top")),
+	Bottom:     key.NewBinding(key.WithKeys("G"), key.WithHelp("Shift + G", "Bottom")),
 	Settings: key.NewBinding(
 		key.WithKeys("i"),
 		key.WithHelp("i", "Show settings"),

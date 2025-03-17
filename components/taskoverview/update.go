@@ -58,6 +58,16 @@ func (m Model) UpdateMain(msg tea.Msg) (Model, tea.Cmd) {
 			m.Viewport.LineUp(1)
 			m.Viewport.SetContent(m.taskElementView())
 			m.taskcard.Task = m.Tasks[m.Cursor]
+		} else if key.Matches(msg, structs.Keymap.Top) {
+			m.Cursor = 0
+			m.Viewport.GotoTop()
+			m.Viewport.SetContent(m.taskElementView())
+			m.taskcard.Task = m.Tasks[m.Cursor]
+		} else if key.Matches(msg, structs.Keymap.Bottom) {
+			m.Cursor = len(m.Tasks) - 1
+			m.Viewport.GotoBottom()
+			m.Viewport.SetContent(m.taskElementView())
+			m.taskcard.Task = m.Tasks[m.Cursor]
 		} else if key.Matches(msg, structs.Keymap.Down) && m.Cursor < len(m.Tasks)-1 {
 			m.Cursor++
 			m.Viewport.LineDown(1)
@@ -223,7 +233,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if key.Matches(msg, key.NewBinding(key.WithKeys("E"))) {
+		if key.Matches(msg, structs.Keymap.QuickNotes) {
 			switch m.state {
 			case mainState:
 				m.quickNote = quicknotes.InitModel()
