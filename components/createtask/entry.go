@@ -13,7 +13,7 @@ type CreateModel struct {
 	Fields   []structs.Questions
 	Newtask  structs.Task
 	styles   structs.Styles
-	Exiting  bool
+	Finished bool
 	Form     *huh.Form
 }
 
@@ -24,7 +24,7 @@ func InitTaskCreation() CreateModel {
 		EditLine: 0,
 		Newtask:  structs.Task{},
 		styles:   *structs.DefaultStyles(),
-		Exiting:  false,
+		Finished: false,
 		Form: huh.NewForm(
 			huh.NewGroup(
 				huh.NewInput().

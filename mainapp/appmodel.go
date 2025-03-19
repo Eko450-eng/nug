@@ -15,7 +15,6 @@ type sessionState int
 
 const (
 	mainState sessionState = iota
-	createState
 	helpState
 )
 

@@ -76,27 +76,6 @@ func (m Model) View(width, height int) string {
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(m.styles.BorderColorActive)
 
-	if m.createmodel.Exiting {
-		m.state = mainState
-		m.Tasks = m.UpdateTasks()
-		m.createmodel.Exiting = false
-	}
-
-	if m.taskcard.Exiting {
-		m.Tasks = m.UpdateTasks()
-		m.state = mainState
-
-		m.taskcard.Task = m.Tasks[m.Cursor]
-
-		m.taskcard.IsActive = false
-		m.taskcard.Exiting = false
-	}
-
-	if m.createProject.Finished {
-		m.state = mainState
-		m.createProject.Finished = false
-	}
-
 	width = width - 10
 	height = height - 2
 

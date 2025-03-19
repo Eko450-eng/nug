@@ -31,7 +31,7 @@ func (m CreateModel) UpdateCreateElement(msg tea.Msg) (CreateModel, tea.Cmd) {
 
 		db.Create(&m.Newtask)
 
-		m.Exiting = true
+		m.Finished = true
 	}
 
 	switch msg := msg.(type) {
@@ -40,7 +40,7 @@ func (m CreateModel) UpdateCreateElement(msg tea.Msg) (CreateModel, tea.Cmd) {
 			cmd = tea.Quit
 			return m, cmd
 		} else if key.Matches(msg, structs.Keymap.QuitEasy) {
-			m.Exiting = true
+			m.Finished = true
 			return m, cmd
 		}
 	}

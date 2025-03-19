@@ -20,7 +20,7 @@ func (m TaskCardModel) UpdateTaskCard(msg tea.Msg) (TaskCardModel, tea.Cmd) {
 	if msg, ok := msg.(tea.KeyMsg); ok {
 		if key.Matches(msg, structs.Keymap.QuitEasy) {
 			m.Editing = false
-			m.Exiting = true
+			m.Finished = true
 			m.IsActive = false
 			return m, nil
 		}
@@ -42,7 +42,7 @@ func (m TaskCardModel) UpdateTaskCard(msg tea.Msg) (TaskCardModel, tea.Cmd) {
 			Updates(newTask)
 
 		m.Editing = false
-		m.Exiting = true
+		m.Finished = true
 		m.IsActive = false
 	}
 

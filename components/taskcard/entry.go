@@ -17,7 +17,7 @@ type Fields struct {
 
 type TaskCardModel struct {
 	Task     structs.Task
-	Exiting  bool
+	Finished bool
 	styles   structs.Styles
 	Editing  bool
 	editline int
@@ -77,7 +77,7 @@ func InitModel(task structs.Task, isActive bool) TaskCardModel {
 		cursor:   0,
 		styles:   *structs.DefaultStyles(),
 		fields:   fields,
-		Exiting:  false,
+		Finished: false,
 		IsActive: isActive,
 		Form:     form,
 	}

@@ -154,6 +154,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 		if newState.Finished {
 			m.state = mainState
+			m.quickNote = quicknotes.InitModel()
 			m.Tasks = m.UpdateTasks()
 		}
 		return m, cmd
@@ -164,6 +165,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 		if newState.Finished {
 			m.state = mainState
+			m.projectView = projectview.InitModel()
 			m.Tasks = m.UpdateTasks()
 		}
 		return m, cmd
@@ -175,8 +177,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		newState, newCmd := m.createmodel.UpdateCreateElement(msg)
 		cmd = newCmd
 		m.createmodel = newState
-		if newState.Exiting {
+		if newState.Finished {
 			m.state = 0
+			m.createProject = createproject.InitModel()
 			m.Tasks = m.UpdateTasks()
 		}
 		return m, cmd
@@ -193,6 +196,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 		if newState.Finished {
 			m.state = mainState
+			m.settings = settings.InitModel()
 			m.Tasks = m.UpdateTasks()
 		}
 		return m, cmd
@@ -203,6 +207,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 		if newState.Finished {
 			m.state = mainState
+			m.createProject = createproject.InitModel()
 			m.Tasks = m.UpdateTasks()
 		}
 		return m, cmd
@@ -217,14 +222,14 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		newState, newCmd := m.UpdateTask(msg)
 		m.taskcard = newState
 
-		if m.taskcard.Exiting {
+		if m.taskcard.Finished {
 			m.Tasks = m.UpdateTasks()
 			m.state = mainState
 
 			m.taskcard.Task = m.Tasks[m.Cursor]
 
 			m.taskcard.IsActive = false
-			m.taskcard.Exiting = false
+			m.taskcard.Finished = false
 		}
 
 		cmd = newCmd
