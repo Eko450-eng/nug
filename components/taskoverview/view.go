@@ -85,6 +85,16 @@ func (m Model) View(width, height int) string {
 	res := ""
 
 	switch m.state {
+	case quickNoteViewState:
+		res = lipgloss.Place(
+			width,
+			height,
+			lipgloss.Left,
+			lipgloss.Top,
+			mainStyle.Render(
+				m.quicknoteview.View(),
+			),
+		)
 	case settingState:
 		res = lipgloss.Place(
 			width,

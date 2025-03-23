@@ -7,6 +7,7 @@ import (
 	"nug/components/createtask"
 	"nug/components/projectview"
 	"nug/components/quicknotes"
+	"nug/components/quicknoteview"
 	"nug/components/settings"
 	"nug/components/taskcard"
 	"nug/helpers"
@@ -27,6 +28,7 @@ const (
 	settingState
 	projectViewState
 	quickNoteState
+	quickNoteViewState
 )
 
 type orderState int
@@ -44,23 +46,23 @@ type Model struct {
 	selected      map[int]struct{}
 	styles        structs.Styles
 	state         sessionState
-	taskcard      taskcard.TaskCardModel
-	createmodel   createtask.CreateModel
 	ordering      orderState
 	hideCompleted bool
+	initializing  bool
+	loaded        bool
+
+	Viewport      viewport.Model
+	taskcard      taskcard.TaskCardModel
+	createmodel   createtask.CreateModel
 	createProject createproject.Model
 	projectView   projectview.Model
 	quickNote     quicknotes.Model
 	calendar      calendar.Model
 	settings      settings.Model
-	initializing  bool
-
-	Viewport viewport.Model
+	quicknoteview quicknoteview.Model
 
 	Width  int
 	Height int
-
-	loaded bool
 }
 
 func (m Model) UpdateTasks() []structs.Task {
@@ -117,15 +119,17 @@ func InitModel() Model {
 		styles:        *structs.DefaultStyles(),
 		show_deleted:  false,
 		state:         mainState,
+		hideCompleted: hideCompleted,
+		ordering:      orderState(ordering),
+		initializing:  true,
+
 		taskcard:      taskCard,
 		createmodel:   createtask.CreateModel{},
 		createProject: createproject.InitModel(),
 		projectView:   projectview.InitModel(),
 		quickNote:     quicknotes.InitModel(),
 		settings:      settings.InitModel(),
-		hideCompleted: hideCompleted,
-		ordering:      orderState(ordering),
-		initializing:  true,
+		quicknoteview: quicknoteview.InitModel(),
 	}
 
 	m.Tasks = m.UpdateTasks()

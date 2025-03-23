@@ -27,10 +27,12 @@ type keymap struct {
 	QuickNotes    key.Binding
 	Top           key.Binding
 	Bottom        key.Binding
+	Projects      key.Binding
 }
 
 // Keymap reusable key mappings shared across models
 var Keymap = keymap{
+	Projects:   key.NewBinding(key.WithKeys("P"), key.WithHelp("Shift + P", "Show Projects")),
 	QuickNotes: key.NewBinding(key.WithKeys("E"), key.WithHelp("Shift + E", "Add Quicknote")),
 	Top:        key.NewBinding(key.WithKeys("g"), key.WithHelp("g", "Top")),
 	Bottom:     key.NewBinding(key.WithKeys("G"), key.WithHelp("Shift + G", "Bottom")),

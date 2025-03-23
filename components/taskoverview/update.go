@@ -5,6 +5,7 @@ import (
 	"nug/components/createtask"
 	"nug/components/projectview"
 	"nug/components/quicknotes"
+	"nug/components/quicknoteview"
 	"nug/components/settings"
 	"nug/components/taskcard"
 	"nug/helpers"
@@ -147,6 +148,17 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch m.state {
+	case quickNoteViewState:
+		newState, newCmd := m.quicknoteview.Update(msg)
+		m.quicknoteview = newState
+		cmd = newCmd
+
+		if newState.Finished {
+			m.state = mainState
+			m.quicknoteview = quicknoteview.InitModel()
+			m.Tasks = m.UpdateTasks()
+		}
+		return m, cmd
 	case quickNoteState:
 		newState, newCmd := m.quickNote.Update(msg)
 		m.quickNote = newState
@@ -238,7 +250,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if key.Matches(msg, structs.Keymap.QuickNotes) {
+		if key.Matches(msg, structs.Keymap.Projects) {
+			m.projectView = projectview.InitModel()
+			m.projectView.Form.Init()
+			m.state = projectViewState
+		} else if key.Matches(msg, structs.Keymap.QuickNotes) {
 			switch m.state {
 			case mainState:
 				m.quickNote = quicknotes.InitModel()
@@ -247,10 +263,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 		} else if key.Matches(msg, structs.Keymap.Settings) {
 			switch m.state {
-			case projectViewState:
-				m.state = mainState
-			case settingState:
-				m.state = mainState
 			case mainState:
 				m.settings = settings.InitModel()
 				m.settings.Form.Init()
@@ -263,9 +275,12 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.calendar.HideCompleted = m.hideCompleted
 				m.state = calendarState
 			case calendarState:
-				m.projectView = projectview.InitModel()
-				m.projectView.Form.Init()
-				m.state = projectViewState
+				m.quicknoteview = quicknoteview.InitModel()
+				m.quicknoteview.Form.Init()
+				m.quicknoteview.Note = helpers.GetNotes()
+				m.state = quickNoteViewState
+			case quickNoteViewState:
+				m.state = mainState
 			}
 		} else if key.Matches(msg, structs.Keymap.Sync) {
 			helpers.SyncToWebDav()

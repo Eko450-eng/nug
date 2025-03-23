@@ -71,6 +71,16 @@ func Resettask() structs.Task {
 	}
 }
 
+func GetNotes() []structs.QuickNotes {
+	var notes []structs.QuickNotes
+	db, _ := ConnectToSQLite()
+	if res := db.
+		Find(&notes); res.Error != nil {
+		panic(res.Error)
+	}
+	return notes
+}
+
 func GetProjectName(id int) string {
 	var projects structs.Project
 	db, _ := ConnectToSQLite()
